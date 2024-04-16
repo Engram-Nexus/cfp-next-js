@@ -1,9 +1,13 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { Environment } from "@/types";
 import { StreamingTextResponse } from "ai";
-import { ENGRAM_API_URL } from "@/constants";
+import { BASE_URL, ENGRAM_API_URL } from "@/constants";
+import { drizzle } from "drizzle-orm/d1";
+import { clientProfile, customers } from "@/db/schema/schema";
+import { decrypt, encrypt } from "@/lib/jwt";
+import { generateUUID } from "@/lib/utils";
+import { eq } from "drizzle-orm";
 // In the edge runtime you can use Bindings that are available in your application
 // (for more details see:
 //    - https://developers.cloudflare.com/pages/framework-guides/deploy-a-nextjs-site/#use-bindings-in-your-nextjs-application
@@ -18,10 +22,10 @@ import { ENGRAM_API_URL } from "@/constants";
 
 export const runtime = "edge";
 
-const app = new Hono<{ Bindings: { NEXT_PUBLIC_BASE_URL: string } }>().basePath("/api");
+const app = new Hono<{ Bindings: { NEXT_PUBLIC_BASE_URL: string; DB: D1Database } }>().basePath("/api");
 
 app.get("/hello", (c) => {
-  const ENV = getRequestContext().env as Environment;
+  const ENV = getRequestContext().env;
   const BASE_URL = ENV?.NEXT_PUBLIC_BASE_URL || "https://example.com";
   return c.json({
     message: "Hello Next.js!",
@@ -56,6 +60,121 @@ app.post("chat", async (c) => {
   })) as { body: ReadableStream<Uint8Array> };
 
   return new StreamingTextResponse(response.body);
+});
+
+// app.get("d1", async (c) => {
+//   const ENV = getRequestContext().env;
+//   console.log("ENV", ENV);
+//   console.log("DB", c.env.DB);
+//   try {
+//     const { results } = await ENV.DB.prepare("SELECT * FROM 'client-profiles'").all();
+//     console.log("result", results);
+//     return c.json({ results });
+//   } catch (error) {
+//     console.error(error);
+//     return c.json({ error: error });
+//   }
+// });
+
+// app.get("d3", async (c) => {
+//   const ENV = getRequestContext().env;
+//   console.log("ENV", ENV);
+//   console.log("DB", c.env.DB);
+//   try {
+//     const db = drizzle(ENV.DB);
+//     const result = await db.select().from(clientProfile).all();
+//     console.log("result", result);
+//     return c.json({ result });
+//   } catch (error) {
+//     console.error(error);
+//     return c.json({ error: error });
+//   }
+// });
+
+// app.post("register/d1", async (c) => {
+//   try {
+//     const ENV = getRequestContext().env;
+//     const { firstName, imageUrls, messages } = (await c.req.json()) as {
+//       firstName: string;
+//       messages: string[];
+//       imageUrls: string[];
+//     };
+//     console.log(`Registering ${firstName}`);
+//     console.log(`imageUrls: ${JSON.stringify(imageUrls)}`);
+//     console.log(`messages: ${JSON.stringify(messages)}`);
+//     const id = generateUUID();
+//     const inserted = await ENV.DB.prepare(
+//       "INSERT INTO 'client-profiles' (id, companyName, logo, description, tagline, website, linkedinUrl) VALUES (?, ?, ?, ?, ?, ?)"
+//     )
+//       .bind(id, firstName, imageUrls[0], messages[0], messages[1], messages[2], messages[3])
+//       .all();
+//     // const inserted = await ENV.DB.prepare("SELECT * FROM 'client-profiles'").all();
+
+//     console.log(`inserted: ${JSON.stringify(inserted)}`);
+//     const token = await encrypt({ id });
+//     console.log(`session token: ${token}`);
+//     const url = "/user?token=" + token;
+
+//     return c.json({ message: `Registered ${firstName}`, inserted, url });
+//   } catch (error) {
+//     console.error(error);
+//     return c.json({ error: error });
+//   }
+// });
+
+app.post("register", async (c) => {
+  try {
+    const { firstName, imageUrls, messages } = (await c.req.json()) as {
+      firstName: string;
+      messages: string[];
+      imageUrls: string[];
+    };
+
+    const ENV = getRequestContext().env;
+    const db = drizzle(ENV.DB);
+    const Id = generateUUID();
+
+    const inserted = await db
+      .insert(clientProfile)
+      .values({
+        Id,
+        companyName: firstName,
+        logo: imageUrls[0],
+        description: messages[0],
+        tagline: messages[1],
+        website: messages[2],
+        linkedinUrl: messages[3],
+      })
+      .returning();
+
+    console.log(`inserted: ${JSON.stringify(inserted)}`);
+    const insertedId = inserted[0].Id;
+    const token = await encrypt({ id: insertedId });
+    const url = BASE_URL + "/user?token=" + token;
+
+    return c.json({ message: `Registered ${firstName}`, data: inserted, url });
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: error });
+  }
+});
+
+app.get("client-profile", async (c) => {
+  try {
+    const ENV = getRequestContext().env;
+    const db = drizzle(ENV.DB);
+
+    const { token } = c.req.query();
+    const decrypted = await decrypt(token);
+    const id = decrypted.id;
+
+    const result = await db.select().from(clientProfile).where(eq(clientProfile.Id, id)).all();
+    console.log("result", result);
+    return c.json({ result, id });
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: error });
+  }
 });
 
 export const GET = handle(app);
