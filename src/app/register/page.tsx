@@ -31,7 +31,7 @@ const formSchema = z.object({
   messages: z.string().min(1, { message: "Messages is required" }),
 });
 
-export function RegisterPage() {
+function RegisterPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

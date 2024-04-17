@@ -24,9 +24,9 @@ async function getClientDetails(token: string) {
 }
 
 async function Landing({
-  searchParams: { token },
+  searchParams: { token, v },
 }: {
-  searchParams: { token: string };
+  searchParams: { token: string; v: string };
 }) {
   const data = await getClientDetails(token);
   if (data === null) {
@@ -37,8 +37,11 @@ async function Landing({
       <ChatIcon />
       <section className="flex-1 font-medium text-4xl min-h-[100dvh] bg-emerald-100/20">
         <div className="lg:flex hidden">
-          <ImageGallery images={[]} />
-          {/* <ImageGallery2 images={[]} /> */}
+          {v && v === "2" ? (
+            <ImageGallery2 images={[]} />
+          ) : (
+            <ImageGallery images={[]} />
+          )}
         </div>
         <div className="flex lg:hidden">
           <ImageGalleryMobile images={[]} />
