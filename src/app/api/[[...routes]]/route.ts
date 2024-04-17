@@ -156,7 +156,7 @@ app.post("register", async (c) => {
     console.log(`inserted: ${JSON.stringify(inserted)}`);
     const insertedId = inserted[0].Id;
     const token = await encrypt({ id: insertedId });
-    const url = BASE_URL + "/user?token=" + token;
+    const url = BASE_URL + "/landing-page?token=" + token;
 
     return c.json({
       message: `Registered ${companyName}`,
