@@ -13,6 +13,7 @@ async function getClientDetails(token: string) {
     const res = await fetch(BASE_URL + "/api/client-profile?token=" + token);
     const data = await res.json();
     console.log("data", data);
+    // @ts-expect-error
     if (data?.error !== undefined) {
       return null;
     }
