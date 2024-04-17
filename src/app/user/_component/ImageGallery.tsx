@@ -45,7 +45,7 @@ function ImageGallery({ images }: { images: string[] }) {
     };
   }, []);
   return (
-    <div ref={containerRef} className="h-dvh lg:w-[50vw] hover:lg:w-[60vw] transition-all ease-in-out duration-700 w-dvw overflow-hidden">
+    <div ref={containerRef} className="h-dvh lg:w-[50vw] transition-all ease-in-out duration-700 w-dvw overflow-hidden">
       <div
         ref={viewRef}
         style={{

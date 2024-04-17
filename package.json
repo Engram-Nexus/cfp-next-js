@@ -12,9 +12,11 @@
     "deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static",
     "build-cf-types": "wrangler types --env-interface CloudflareEnv env.d.ts",
     "db:generate": "drizzle-kit generate:sqlite",
-    "db:up": "drizzle-kit up:sqlite"
+    "db:up": "drizzle-kit up:sqlite",
+    "deploy:direct": "echo 'warning: deplying previous build to cloudflare' && wrangler pages deploy .vercel/output/static"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-slot": "^1.0.2",
     "ai": "^3.0.19",
     "class-variance-authority": "^0.7.0",
@@ -32,7 +34,8 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "tailwind-merge": "^2.2.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^0.9.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.11.0",

@@ -22,7 +22,9 @@ import { eq } from "drizzle-orm";
 
 export const runtime = "edge";
 
-const app = new Hono<{ Bindings: { NEXT_PUBLIC_BASE_URL: string; DB: D1Database } }>().basePath("/api");
+const app = new Hono<{
+  Bindings: { NEXT_PUBLIC_BASE_URL: string; DB: D1Database };
+}>().basePath("/api");
 
 app.get("/hello", (c) => {
   const ENV = getRequestContext().env;
@@ -124,11 +126,15 @@ app.post("chat", async (c) => {
 
 app.post("register", async (c) => {
   try {
-    const { firstName, imageUrls, messages } = (await c.req.json()) as {
-      firstName: string;
-      messages: string[];
-      imageUrls: string[];
-    };
+    const { companyName, description, linkedinUrl, logo, tagline, website } =
+      (await c.req.json()) as {
+        companyName: string;
+        logo: string;
+        description: string;
+        tagline: string;
+        website: string;
+        linkedinUrl: string;
+      };
 
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
@@ -138,12 +144,12 @@ app.post("register", async (c) => {
       .insert(clientProfile)
       .values({
         Id,
-        companyName: firstName,
-        logo: imageUrls[0],
-        description: messages[0],
-        tagline: messages[1],
-        website: messages[2],
-        linkedinUrl: messages[3],
+        companyName,
+        description,
+        linkedinUrl,
+        logo,
+        tagline,
+        website,
       })
       .returning();
 
@@ -152,7 +158,11 @@ app.post("register", async (c) => {
     const token = await encrypt({ id: insertedId });
     const url = BASE_URL + "/user?token=" + token;
 
-    return c.json({ message: `Registered ${firstName}`, data: inserted, url });
+    return c.json({
+      message: `Registered ${companyName}`,
+      data: inserted,
+      url,
+    });
   } catch (error) {
     console.error(error);
     return c.json({ error: error });
@@ -168,7 +178,11 @@ app.get("client-profile", async (c) => {
     const decrypted = await decrypt(token);
     const id = decrypted.id;
 
-    const result = await db.select().from(clientProfile).where(eq(clientProfile.Id, id)).all();
+    const result = await db
+      .select()
+      .from(clientProfile)
+      .where(eq(clientProfile.Id, id))
+      .all();
     console.log("result", result);
     return c.json({ result, id });
   } catch (error) {
