@@ -4,6 +4,7 @@ import ImageGalleryMobile from "./_component/ImageGalleryMobile";
 import { BASE_URL } from "@/constants";
 import ImageGallery2 from "./_component/ImageGallery2";
 import ChatIcon from "./_component/ChatIcon";
+import { notFound } from "next/navigation";
 
 export const runtime = "edge";
 
@@ -12,6 +13,9 @@ async function getClientDetails(token: string) {
     const res = await fetch(BASE_URL + "/api/client-profile?token=" + token);
     const data = await res.json();
     console.log("data", data);
+    if (data?.error !== undefined) {
+      return null;
+    }
     return data;
   } catch (error) {
     console.error(error);
@@ -25,9 +29,12 @@ async function Landing({
   searchParams: { token: string };
 }) {
   const data = await getClientDetails(token);
+  if (data === null) {
+    notFound();
+  }
   return (
     <div className="flex flex-col-reverse lg:flex-row relative">
-      <ChatIcon/>
+      <ChatIcon />
       <section className="flex-1 font-medium text-4xl min-h-[100dvh] bg-emerald-100/20">
         <div className="lg:flex hidden">
           <ImageGallery images={[]} />
