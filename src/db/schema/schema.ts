@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { createInsertSchema,createSelectSchema } from "drizzle-zod"
 
 export const clientProfile = sqliteTable("client-profiles", {
   Id: text("id", { length: 256 }).primaryKey(),
@@ -35,3 +36,6 @@ export const visitorRelations = relations(visitor,
     clientProfileId: one(clientProfile, { fields: [visitor.clientProfileId], references: [clientProfile.Id] }),
   })
 )
+
+export const insertClientProfileSchema = createInsertSchema(clientProfile);
+export const insertVisitorSchema = createInsertSchema(visitor);

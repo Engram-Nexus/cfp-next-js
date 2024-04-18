@@ -4,7 +4,11 @@ import { getRequestContext } from "@cloudflare/next-on-pages";
 import { StreamingTextResponse } from "ai";
 import { BASE_URL, ENGRAM_API_URL } from "@/constants";
 import { drizzle } from "drizzle-orm/d1";
-import { clientProfile, visitor } from "@/db/schema/schema";
+import {
+  clientProfile,
+  insertClientProfileSchema,
+  visitor,
+} from "@/db/schema/schema";
 import { decrypt, encrypt } from "@/lib/jwt";
 import { generateUUID } from "@/lib/utils";
 import { eq } from "drizzle-orm";
@@ -65,28 +69,34 @@ app.post("register", async (c) => {
         website: string;
         linkedinUrl: string;
       };
+    const Id = generateUUID();
+
+    const payload = {
+      Id,
+      companyName,
+      description,
+      linkedinUrl,
+      logo,
+      tagline,
+      website,
+      dateCreated: Math.floor(Date.now() / 1000),
+    };
+
+    try {
+      insertClientProfileSchema.parse(payload);
+    } catch (error) {
+      console.error(error);
+      return c.json({ error: error });
+    }
 
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
-    const Id = generateUUID();
 
     await ENV.DB.prepare(
       "CREATE TABLE IF NOT EXISTS client-profiles (id TEXT PRIMARY KEY, dateCreated INTEGER, companyName TEXT, description TEXT, linkedinUrl TEXT, logo TEXT, tagline TEXT, website TEXT)"
     ).run();
 
-    const inserted = await db
-      .insert(clientProfile)
-      .values({
-        Id,
-        companyName,
-        description,
-        linkedinUrl,
-        logo,
-        tagline,
-        website,
-        dateCreated: Math.floor(Date.now() / 1000),
-      })
-      .returning();
+    const inserted = await db.insert(clientProfile).values(payload).returning();
 
     console.log(`inserted: ${JSON.stringify(inserted)}`);
 
@@ -111,27 +121,34 @@ app.post("visitor", async (c) => {
         clientProfileId: string;
         colors: string[];
       };
+
+    const Id = generateUUID();
+    const payload = {
+      Id,
+      email,
+      messages,
+      imageUrls,
+      firstName,
+      clientProfileId,
+      colors,
+      dateCreated: Math.floor(Date.now() / 1000),
+    };
+
+    try {
+      insertClientProfileSchema.parse(payload);
+    } catch (error) {
+      console.error(error);
+      return c.json({ error: error });
+    }
+
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
-    const Id = generateUUID();
 
     await ENV.DB.prepare(
       "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages TEXT, imageUrls TEXT, firstName TEXT, clientProfileId TEXT, colors TEXT)"
     ).run();
 
-    const result = await db
-      .insert(visitor)
-      .values({
-        Id,
-        email,
-        messages,
-        imageUrls,
-        dateCreated: Math.floor(Date.now() / 1000),
-        firstName,
-        clientProfileId,
-        colors,
-      })
-      .returning();
+    const result = await db.insert(visitor).values(payload).returning();
     const insertedId = result[0].Id;
     const token = await encrypt({ id: insertedId, clientProfileId });
     const url = BASE_URL + "/landing-page?token=" + token;
