@@ -4,21 +4,10 @@ import { getRequestContext } from "@cloudflare/next-on-pages";
 import { StreamingTextResponse } from "ai";
 import { BASE_URL, ENGRAM_API_URL } from "@/constants";
 import { drizzle } from "drizzle-orm/d1";
-import { clientProfile, customers } from "@/db/schema/schema";
+import { clientProfile, visitor } from "@/db/schema/schema";
 import { decrypt, encrypt } from "@/lib/jwt";
 import { generateUUID } from "@/lib/utils";
 import { eq } from "drizzle-orm";
-// In the edge runtime you can use Bindings that are available in your application
-// (for more details see:
-//    - https://developers.cloudflare.com/pages/framework-guides/deploy-a-nextjs-site/#use-bindings-in-your-nextjs-application
-//    - https://developers.cloudflare.com/pages/functions/bindings/
-// )
-//
-// KV Example:
-// const myKv = getRequestContext().env.MY_KV_NAMESPACE
-// await myKv.put('suffix', ' from a KV store!')
-// const suffix = await myKv.get('suffix')
-// responseText += suffix
 
 export const runtime = "edge";
 
@@ -64,66 +53,7 @@ app.post("chat", async (c) => {
   return new StreamingTextResponse(response.body);
 });
 
-// app.get("d1", async (c) => {
-//   const ENV = getRequestContext().env;
-//   console.log("ENV", ENV);
-//   console.log("DB", c.env.DB);
-//   try {
-//     const { results } = await ENV.DB.prepare("SELECT * FROM 'client-profiles'").all();
-//     console.log("result", results);
-//     return c.json({ results });
-//   } catch (error) {
-//     console.error(error);
-//     return c.json({ error: error });
-//   }
-// });
-
-// app.get("d3", async (c) => {
-//   const ENV = getRequestContext().env;
-//   console.log("ENV", ENV);
-//   console.log("DB", c.env.DB);
-//   try {
-//     const db = drizzle(ENV.DB);
-//     const result = await db.select().from(clientProfile).all();
-//     console.log("result", result);
-//     return c.json({ result });
-//   } catch (error) {
-//     console.error(error);
-//     return c.json({ error: error });
-//   }
-// });
-
-// app.post("register/d1", async (c) => {
-//   try {
-//     const ENV = getRequestContext().env;
-//     const { firstName, imageUrls, messages } = (await c.req.json()) as {
-//       firstName: string;
-//       messages: string[];
-//       imageUrls: string[];
-//     };
-//     console.log(`Registering ${firstName}`);
-//     console.log(`imageUrls: ${JSON.stringify(imageUrls)}`);
-//     console.log(`messages: ${JSON.stringify(messages)}`);
-//     const id = generateUUID();
-//     const inserted = await ENV.DB.prepare(
-//       "INSERT INTO 'client-profiles' (id, companyName, logo, description, tagline, website, linkedinUrl) VALUES (?, ?, ?, ?, ?, ?)"
-//     )
-//       .bind(id, firstName, imageUrls[0], messages[0], messages[1], messages[2], messages[3])
-//       .all();
-//     // const inserted = await ENV.DB.prepare("SELECT * FROM 'client-profiles'").all();
-
-//     console.log(`inserted: ${JSON.stringify(inserted)}`);
-//     const token = await encrypt({ id });
-//     console.log(`session token: ${token}`);
-//     const url = "/user?token=" + token;
-
-//     return c.json({ message: `Registered ${firstName}`, inserted, url });
-//   } catch (error) {
-//     console.error(error);
-//     return c.json({ error: error });
-//   }
-// });
-
+// D1 database
 app.post("register", async (c) => {
   try {
     const { companyName, description, linkedinUrl, logo, tagline, website } =
@@ -140,6 +70,10 @@ app.post("register", async (c) => {
     const db = drizzle(ENV.DB);
     const Id = generateUUID();
 
+    await ENV.DB.prepare(
+      "CREATE TABLE IF NOT EXISTS client-profiles (id TEXT PRIMARY KEY, dateCreated INTEGER, companyName TEXT, description TEXT, linkedinUrl TEXT, logo TEXT, tagline TEXT, website TEXT)"
+    ).run();
+
     const inserted = await db
       .insert(clientProfile)
       .values({
@@ -150,19 +84,58 @@ app.post("register", async (c) => {
         logo,
         tagline,
         website,
+        dateCreated: Math.floor(Date.now() / 1000),
       })
       .returning();
 
     console.log(`inserted: ${JSON.stringify(inserted)}`);
-    const insertedId = inserted[0].Id;
-    const token = await encrypt({ id: insertedId });
-    const url = BASE_URL + "/landing-page?token=" + token;
 
     return c.json({
       message: `Registered ${companyName}`,
       data: inserted,
-      url,
     });
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: error });
+  }
+});
+
+app.post("visitor", async (c) => {
+  try {
+    const { email, messages, imageUrls, firstName, clientProfileId, colors } =
+      (await c.req.json()) as {
+        email: string;
+        messages: string[];
+        imageUrls: string[];
+        firstName: string;
+        clientProfileId: string;
+        colors: string[];
+      };
+    const ENV = getRequestContext().env;
+    const db = drizzle(ENV.DB);
+    const Id = generateUUID();
+
+    await ENV.DB.prepare(
+      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages TEXT, imageUrls TEXT, firstName TEXT, clientProfileId TEXT, colors TEXT)"
+    ).run();
+
+    const result = await db
+      .insert(visitor)
+      .values({
+        Id,
+        email,
+        messages,
+        imageUrls,
+        dateCreated: Math.floor(Date.now() / 1000),
+        firstName,
+        clientProfileId,
+        colors,
+      })
+      .returning();
+    const insertedId = result[0].Id;
+    const token = await encrypt({ id: insertedId, clientProfileId });
+    const url = BASE_URL + "/landing-page?token=" + token;
+    return c.json({ url });
   } catch (error) {
     console.error(error);
     return c.json({ error: error });
@@ -175,7 +148,13 @@ app.get("client-profile", async (c) => {
     const db = drizzle(ENV.DB);
 
     const { token } = c.req.query();
+    if (!token) {
+      return c.json({ error: "No token provided" });
+    }
     const decrypted = await decrypt(token);
+    if (decrypted === null) {
+      return c.json({ error: "Invalid token" });
+    }
     const id = decrypted.id;
 
     const result = await db
@@ -183,7 +162,7 @@ app.get("client-profile", async (c) => {
       .from(clientProfile)
       .where(eq(clientProfile.Id, id))
       .all();
-    console.log("result", result);
+    console.log("result", JSON.stringify(result));
     return c.json({ result, id });
   } catch (error) {
     console.error(error);
