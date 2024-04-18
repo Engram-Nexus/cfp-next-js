@@ -7,6 +7,7 @@ import { drizzle } from "drizzle-orm/d1";
 import {
   clientProfile,
   insertClientProfileSchema,
+  insertVisitorSchema,
   visitor,
 } from "@/db/schema/schema";
 import { decrypt, encrypt } from "@/lib/jwt";
@@ -135,7 +136,7 @@ app.post("visitor", async (c) => {
     };
 
     try {
-      insertClientProfileSchema.parse(payload);
+      insertVisitorSchema.parse(payload);
     } catch (error) {
       console.error(error);
       return c.json({ error: error });
