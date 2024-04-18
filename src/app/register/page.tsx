@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -26,9 +25,6 @@ const formSchema = z.object({
   website: z.string().min(1, { message: "Website is required" }),
   linkedinUrl: z.string().min(1, { message: "Linkedin Url is required" }),
   logo: z.string().min(1, { message: "Logo is required" }),
-  firstName: z.string().min(1, { message: "First Name is required" }),
-  imageUrls: z.string().min(1, { message: "Image Urls is required" }),
-  messages: z.string().min(1, { message: "Messages is required" }),
 });
 
 function RegisterPage() {
@@ -41,9 +37,6 @@ function RegisterPage() {
       website: "",
       linkedinUrl: "",
       logo: "",
-      firstName: "",
-      imageUrls: "",
-      messages: "",
     },
   });
 
@@ -70,22 +63,9 @@ function RegisterPage() {
               >
                 <FormField
                   control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem className="">
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="first name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="companyName"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-4 mx-1">
                       <FormLabel>Company Name</FormLabel>
                       <FormControl>
                         <Input placeholder="Engram Nexus" {...field} />
@@ -99,7 +79,7 @@ function RegisterPage() {
                   control={form.control}
                   name="tagline"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-4 mx-1">
                       <FormLabel>Tagline</FormLabel>
                       <FormControl>
                         <Input placeholder="tagline" {...field} />
@@ -113,7 +93,7 @@ function RegisterPage() {
                   control={form.control}
                   name="description"
                   render={({ field }) => (
-                    <FormItem className="col-span-3">
+                    <FormItem className="col-span-4 mx-1">
                       <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea
@@ -130,7 +110,7 @@ function RegisterPage() {
                   control={form.control}
                   name="website"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-2 mx-1">
                       <FormLabel>Website</FormLabel>
                       <FormControl>
                         <Input placeholder="website" {...field} />
@@ -143,7 +123,7 @@ function RegisterPage() {
                   control={form.control}
                   name="linkedinUrl"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-2 mx-1">
                       <FormLabel>Linkedin Url</FormLabel>
                       <FormControl>
                         <Input placeholder="linkedin url" {...field} />
@@ -156,51 +136,11 @@ function RegisterPage() {
                   control={form.control}
                   name="logo"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="col-span-2 mx-1">
                       <FormLabel>Logo</FormLabel>
                       <FormControl>
                         <Input placeholder="logo" {...field} />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="imageUrls"
-                  render={({ field }) => (
-                    <FormItem className="col-span-3">
-                      <FormLabel>Images Urls</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Images urls"
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        You can separate urls with space or a comma.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="messages"
-                  render={({ field }) => (
-                    <FormItem className="col-span-3">
-                      <FormLabel>Messages</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Messages"
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        You can separate messages with a return.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
