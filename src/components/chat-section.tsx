@@ -4,8 +4,9 @@ import { useChat } from "ai/react";
 import { useMemo } from "react";
 import { insertDataIntoMessages } from "./transform";
 import { ChatInput, ChatMessages } from "./ui/chat";
+import { cn } from "@/lib/utils";
 
-export default function ChatSection() {
+export default function ChatSection({ className, flex1 }: { className?: string, flex1?: boolean }) {
   const {
     messages,
     input,
@@ -27,12 +28,13 @@ export default function ChatSection() {
   }, [messages, data]);
 
   return (
-    <div className="space-y-4 max-w-5xl w-full">
+    <div className={cn("space-y-4 max-w-5xl w-full h-full", className)}>
       <ChatMessages
         messages={transformedMessages}
         isLoading={isLoading}
         reload={reload}
         stop={stop}
+        flex1={flex1}
       />
       <ChatInput
         input={input}

@@ -4,9 +4,12 @@ import { useEffect, useRef } from "react";
 import ChatActions from "./chat-actions";
 import ChatMessage from "./chat-message";
 import { ChatHandler } from "./chat.interface";
+import { cn } from "@/lib/utils";
 
 export default function ChatMessages(
-  props: Pick<ChatHandler, "messages" | "isLoading" | "reload" | "stop">,
+  props: Pick<ChatHandler, "messages" | "isLoading" | "reload" | "stop"> & {
+    flex1?: boolean;
+  }
 ) {
   const scrollableChatContainerRef = useRef<HTMLDivElement>(null);
   const messageLength = props.messages.length;
@@ -35,7 +38,11 @@ export default function ChatMessages(
   }, [messageLength, lastMessage]);
 
   return (
-    <div className="w-full rounded-xl bg-white p-4 shadow-xl pb-0">
+    <div
+      className={cn("w-full rounded-xl bg-white p-4 shadow-xl pb-0", {
+        "flex-1": props.flex1,
+      })}
+    >
       <div
         className="flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4"
         ref={scrollableChatContainerRef}
