@@ -34,9 +34,9 @@ async function Landing({
 }) {
   const data = await getClientDetails(token);
   if (data === null) {
-    notFound();
+    // notFound();
   }
-  // v = "3";
+  v = "3";
   return (
     <>
       {v && v === "3" ? (
