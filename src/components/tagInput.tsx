@@ -5,12 +5,12 @@ import React from "react";
 
 export interface TagInputProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  setVal: (val: string[]) => void;
+  setVal: (val: string[] | undefined) => void;
 }
 
 const TagInput = React.forwardRef<HTMLTextAreaElement, TagInputProps>(
   ({ className, setVal, ...props }, ref) => {
-    const [tags, setTags] = React.useState<string[]>([]);
+    const [tags, setTags] = React.useState<string[] | undefined>();
     const [input, setInput] = React.useState<string>("");
 
     React.useEffect(() => {
@@ -21,14 +21,19 @@ const TagInput = React.forwardRef<HTMLTextAreaElement, TagInputProps>(
       <>
         <div className="flex flex-col min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
           <div className="flex flex-col gap-2 justify-center my-2">
-            {tags.map((tag, index) => (
+            {tags?.map((tag, index) => (
               <span
                 key={index}
                 className="flex justify-between mr-1 bg-zinc-300 text-black px-4 py-1 rounded-sm"
               >
                 {tag}
-                <span className="cursor-pointer" onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}>
-                <X size={16}/>
+                <span
+                  className="cursor-pointer"
+                  onClick={() =>
+                    setTags((prev) => prev?.filter((t) => t !== tag))
+                  }
+                >
+                  <X size={16} />
                 </span>
               </span>
             ))}
@@ -46,7 +51,7 @@ const TagInput = React.forwardRef<HTMLTextAreaElement, TagInputProps>(
                 e.preventDefault();
                 if (input) {
                   setTags((prev) => {
-                    const newTagArray = [...prev, input];
+                    const newTagArray = [...(prev ? prev : []), input];
                     const unique = new Set(newTagArray);
                     return Array.from(unique);
                   });

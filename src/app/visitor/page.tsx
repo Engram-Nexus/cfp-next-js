@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import ColorPicker from "@/components/color-picker";
 import TagInput from "@/components/tagInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +35,7 @@ const formSchema = z.object({
     .string()
     .min(36, { message: "Invalid clientProfileId" })
     .max(36, { message: "Invalid clientProfileId" }),
-  // colors: z.array(z.string()),
+  colors: z.array(z.string().min(1, { message: "Colors are required" })),
 });
 
 function VisistorRegister() {
@@ -42,10 +43,11 @@ function VisistorRegister() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: "",
-      imageUrls: [],
-      messages: [],
+      imageUrls: undefined,
+      messages: undefined,
       clientProfileId: "",
       email: "",
+      colors: undefined,
     },
   });
 
@@ -58,7 +60,7 @@ function VisistorRegister() {
       imageUrls: values.imageUrls,
       messages: values.messages,
       clientProfileId: values.clientProfileId,
-      // colors: values.colors,
+      colors: values.colors,
     };
     fetch("/api/visitor", {
       method: "POST",
@@ -73,14 +75,23 @@ function VisistorRegister() {
   }
 
   const setMessages = useCallback(
-    (messages: string[]) => {
+    (messages: string[] | undefined) => {
+      if (messages === undefined) return;
       form.setValue("messages", messages);
     },
     [form]
   );
   const setImageUrls = useCallback(
-    (imageUrls: string[]) => {
+    (imageUrls: string[] | undefined) => {
+      if (imageUrls === undefined) return;
       form.setValue("imageUrls", imageUrls);
+    },
+    [form]
+  );
+  const setColors = useCallback(
+    (colors: string[]|undefined) => {
+      if (colors === undefined) return;
+      form.setValue("colors", colors);
     },
     [form]
   );
@@ -175,6 +186,22 @@ function VisistorRegister() {
                           {...field}
                           setVal={setMessages}
                         />
+                      </FormControl>
+                      <FormDescription>
+                        You can separate messages with a return.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="colors"
+                  render={({ field }) => (
+                    <FormItem className="col-span-3 mx-1">
+                      <FormControl>
+                        <ColorPicker setColors={setColors} />
                       </FormControl>
                       <FormDescription>
                         You can separate messages with a return.
