@@ -5,7 +5,7 @@ import React from "react";
 
 export interface TagInputProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  setVal: React.Dispatch<React.SetStateAction<string>>;
+  setVal: (val: string[]) => void;
 }
 
 const TagInput = React.forwardRef<HTMLTextAreaElement, TagInputProps>(
@@ -14,7 +14,7 @@ const TagInput = React.forwardRef<HTMLTextAreaElement, TagInputProps>(
     const [input, setInput] = React.useState<string>("");
 
     React.useEffect(() => {
-      setVal(tags.join(","));
+      setVal(tags);
     }, [tags, setVal]);
 
     return (
