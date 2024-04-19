@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
-import ImageGallery from "./_component/ImageGallery";
-import ImageGalleryMobile from "./_component/ImageGalleryMobile";
 import { BASE_URL } from "@/constants";
-import ImageGallery2 from "./_component/ImageGallery2";
 import ChatIcon from "./_component/ChatIcon";
-import { notFound } from "next/navigation";
+import ImageGallery from "./_component/ImageGallery";
+import ImageGallery2 from "./_component/ImageGallery2";
+import ImageGalleryMobile from "./_component/ImageGalleryMobile";
 
 export const runtime = "edge";
 
@@ -33,11 +32,10 @@ async function Landing({
 }) {
   const data = await getClientDetails(token);
   if (data === null) {
-    notFound();
+    // notFound();
   }
   return (
     <div className="flex flex-col-reverse lg:flex-row relative">
-      <ChatIcon />
       <section className="flex-1 font-medium text-4xl min-h-[100dvh] bg-emerald-100/20">
         <div className="lg:flex hidden">
           {v && v === "2" ? (
@@ -51,8 +49,10 @@ async function Landing({
         </div>
       </section>
       <section className="flex-1 font-medium text-4xl min-h-[100dvh] flex flex-col items-center justify-between">
+        <h1 className="text-xl text-center">
         {/* @ts-expect-error */}
-        <h1 className="text-xl text-center">client-id :{data?.result[0]?.Id}</h1>
+          client-id :{data?.result[0]?.Id}
+        </h1>
 
         <div className="px-8 flex flex-col items-center">
           <p className="text-center text-7xl font-medium text-balance py-8 transition-all duration-700 ease-in-out">
@@ -65,6 +65,9 @@ async function Landing({
         </div>
         <p></p>
       </section>
+      <div className="fixed bottom-10 right-10">
+        <ChatIcon />
+      </div>
     </div>
   );
 }
