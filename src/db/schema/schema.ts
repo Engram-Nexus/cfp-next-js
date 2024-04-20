@@ -23,6 +23,7 @@ export const visitor = sqliteTable("visitors", {
   firstName: text("firstName", { length: 256 }).notNull(),
   clientProfileId: text("clientProfileId", { length: 256 }).notNull(),
   colors: text("colors", { mode: "json" }),
+  assistantId: text("assistantId", { length: 256 }).notNull(),
 })
 
 export const clientRelations = relations(clientProfile,

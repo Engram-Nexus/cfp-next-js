@@ -1,46 +1,46 @@
 "use client";
 
-import { useChat } from "ai/react";
-import { useMemo } from "react";
-import { insertDataIntoMessages } from "./transform";
-import { ChatInput, ChatMessages } from "./ui/chat";
 import { cn } from "@/lib/utils";
+import { experimental_useAssistant as useAssistant } from "ai/react";
+import { ChatInput, ChatMessages } from "./ui/chat";
+import { useEffect } from "react";
 
-export default function ChatSection({ className, flex1 }: { className?: string, flex1?: boolean }) {
-  const {
-    messages,
-    input,
-    isLoading,
-    handleSubmit,
-    handleInputChange,
-    reload,
-    stop,
-    data,
-  } = useChat({
-    api: process.env.NEXT_PUBLIC_CHAT_API,
-    headers: {
-      "Content-Type": "application/json", // using JSON because of vercel/ai 2.2.26
-    },
-  });
+export default function ChatSection({ className, flex1, assistantId }: { className?: string, flex1?: boolean, assistantId: string }) {
+const {
+  messages,
+  input,
+  handleInputChange,
+  submitMessage: handleSubmit,
+  threadId,
+  status
+} = useAssistant({
+  api: "/api/assistant",
+});
 
-  const transformedMessages = useMemo(() => {
-    return insertDataIntoMessages(messages, data);
-  }, [messages, data]);
+useEffect(() => {
+  console.log("threadId", threadId)
+},[threadId])
+
 
   return (
     <div className={cn("space-y-4 max-w-5xl w-full h-full", className)}>
       <ChatMessages
-        messages={transformedMessages}
-        isLoading={isLoading}
-        reload={reload}
-        stop={stop}
+        messages={messages}
+        isLoading={status==="in_progress"}
+        reload={()=>{
+          console.log("reload")
+        }}
+        stop={()=>{
+          console.log("stop")
+        }}
         flex1={flex1}
       />
       <ChatInput
         input={input}
         handleSubmit={handleSubmit}
         handleInputChange={handleInputChange}
-        isLoading={isLoading}
+        isLoading={status==="in_progress"}
+        assistantId={assistantId}
       />
     </div>
   );

@@ -27,6 +27,7 @@ const formSchema = z.object({
     .min(1, { message: "Email is required" })
     .email("Invalid email"),
   firstName: z.string().min(1, { message: "First Name is required" }),
+  assistantId: z.string().min(1, { message: "Assistant Id is required" }),
   imageUrls: z.array(z.string().min(1, { message: "Image Urls is required" })),
   messages: z.array(
     z.string().min(1, { message: "messages Urls is required" })
@@ -48,6 +49,7 @@ function VisistorRegister() {
       clientProfileId: "",
       email: "",
       colors: undefined,
+      assistantId: "",
     },
   });
 
@@ -61,6 +63,7 @@ function VisistorRegister() {
       messages: values.messages,
       clientProfileId: values.clientProfileId,
       colors: values.colors,
+      assistantId: values.assistantId,
     };
     fetch("/api/visitor", {
       method: "POST",
@@ -89,7 +92,7 @@ function VisistorRegister() {
     [form]
   );
   const setColors = useCallback(
-    (colors: string[]|undefined) => {
+    (colors: string[] | undefined) => {
       if (colors === undefined) return;
       form.setValue("colors", colors);
     },
@@ -151,6 +154,19 @@ function VisistorRegister() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="assistantId"
+                  render={({ field }) => (
+                    <FormItem className="col-span-4 mx-1">
+                      <FormLabel>Assistant Id</FormLabel>
+                      <FormControl>
+                        <Input placeholder="assistant id...." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -160,7 +176,7 @@ function VisistorRegister() {
                       <FormLabel>Images Urls</FormLabel>
                       <FormControl>
                         <TagInput
-                          placeholder="Messages"
+                          placeholder="Image urls"
                           className="resize-none"
                           {...field}
                           setVal={setImageUrls}
@@ -203,9 +219,6 @@ function VisistorRegister() {
                       <FormControl>
                         <ColorPicker setColors={setColors} />
                       </FormControl>
-                      <FormDescription>
-                        You can separate messages with a return.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -1,11 +1,11 @@
 import { BASE_URL } from "@/constants";
+import { notFound } from "next/navigation";
 import ChatIcon from "./_component/ChatIcon";
 import HeadingSection from "./_component/HeadingSection";
 import ImageGallery from "./_component/ImageGallery";
 import ImageGallery2 from "./_component/ImageGallery2";
 import ImageGalleryMobile from "./_component/ImageGalleryMobile";
 import V3 from "./_component/v3";
-import { notFound } from "next/navigation";
 
 export const runtime = "edge";
 
@@ -14,16 +14,33 @@ async function getClientDetails(token: string) {
     const res = await fetch(BASE_URL + "/api/client-profile?token=" + token);
     const data = (await res.json()) as
       | { error: any }
-      | { result: [{ Id: string }] };
+      | { result: [{ Id: string, }] };
     console.log("data", data);
     // @ts-expect-error
     if (data?.error !== undefined) {
       return null;
     }
-    return data;
+    return data as { result: [{ Id: string, }]; };
   } catch (error) {
     console.error(error);
     return null;
+  }
+}
+
+async function getVisitorDetails(token:string) {
+  try {
+    const res = await fetch(BASE_URL + "/api/visitor?token=" + token);
+    const data = (await res.json()) as
+      | { error: any }
+      | { result: any,Id: string, clientProfileId: string };
+    console.log("data", data);
+    // @ts-expect-error
+    if (data?.error !== undefined) {
+      return null;
+    }
+    return data as { result: { clientProfileId: string },Id: string, clientProfileId: string };
+  } catch (error) {
+    
   }
 }
 
@@ -32,17 +49,19 @@ async function Landing({
 }: {
   searchParams: { token: string; v: string };
 }) {
-  const data = await getClientDetails(token);
-  if (data === null) {
-    // notFound();
-  }
   v = "3";
+  const data = await getVisitorDetails(token);
+  if (data === null) {
+    notFound();
+  }
+  // #TODO : get info of the visitor from the id
+  const Id = data?.result;
+
   return (
     <>
       {v && v === "3" ? (
         <div className="h-screen w-screen">
-          {/* @ts-expect-error */}
-          <V3 id={data?.result[0]?.Id} v="3" />
+          <V3 id={"123"} v="3" />
         </div>
       ) : (
         <div className="flex flex-col-reverse lg:flex-row relative">
@@ -59,7 +78,7 @@ async function Landing({
             </div>
           </section>
           {/* @ts-expect-error */}
-          <HeadingSection id={data?.result[0]?.Id} v="1" />
+          <HeadingSection id={data?.result} v="1" />
           <div className="fixed bottom-10 right-10">
             <ChatIcon />
           </div>

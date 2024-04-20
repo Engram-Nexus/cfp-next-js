@@ -13,6 +13,7 @@ import {
 import { decrypt, encrypt } from "@/lib/jwt";
 import { generateUUID } from "@/lib/utils";
 import { eq } from "drizzle-orm";
+import { runAssistant } from "./assistant/assistantApi";
 
 export const runtime = "edge";
 
@@ -56,6 +57,26 @@ app.post("chat", async (c) => {
   })) as { body: ReadableStream<Uint8Array> };
 
   return new StreamingTextResponse(response.body);
+});
+
+app.post("assistant", async (c) => {
+  // parse the request body
+  const input: {
+    threadId: string | null;
+    message: string;
+    data:{
+      [key:string]: any
+    }
+  } = await c.req.json();
+
+  if (!input) {
+    return c.json({ error: "No input provided" });
+  }
+  if (!input?.data?.assistantId) {
+    return c.json({ error: "No assistantId provided" });
+  }
+
+  return runAssistant({...input, assistantId: input?.data?.assistantId});
 });
 
 // D1 database
@@ -113,7 +134,7 @@ app.post("register", async (c) => {
 
 app.post("visitor", async (c) => {
   try {
-    const { email, messages, imageUrls, firstName, clientProfileId, colors } =
+    const { email, messages, imageUrls, firstName, clientProfileId, colors, assistantId } =
       (await c.req.json()) as {
         email: string;
         messages: string[];
@@ -121,6 +142,7 @@ app.post("visitor", async (c) => {
         firstName: string;
         clientProfileId: string;
         colors: string[];
+        assistantId: string;
       };
 
     const Id = generateUUID();
@@ -132,6 +154,7 @@ app.post("visitor", async (c) => {
       firstName,
       clientProfileId,
       colors,
+      assistantId,
       dateCreated: Math.floor(Date.now() / 1000),
     };
 
@@ -160,6 +183,32 @@ app.post("visitor", async (c) => {
   }
 });
 
+app.get("visitor", async (c) => {
+  try {
+  const { token } = c.req.query();
+  if (!token) {
+    return c.json({ error: "No token provided" });
+  }
+  const decrypted = await decrypt(token);
+  if (decrypted === null) {
+    return c.json({ error: "Invalid token" });
+  }
+  const id = decrypted.id;
+  const clientProfileId = decrypted.clientProfileId;
+    const ENV = getRequestContext().env;
+    const db = drizzle(ENV.DB);
+
+    const result = await db.select().from(visitor).where(eq(visitor.Id, id)).all();
+    console.log("result", JSON.stringify(result));
+    return c.json({ result: result[0], Id: result[0].Id, clientProfileId });
+
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: error });
+  }
+
+})
+
 app.get("client-profile", async (c) => {
   try {
     const ENV = getRequestContext().env;
@@ -181,7 +230,7 @@ app.get("client-profile", async (c) => {
       .where(eq(clientProfile.Id, id))
       .all();
     console.log("result", JSON.stringify(result));
-    return c.json({ result, id });
+    return c.json({ result:result[0], id });
   } catch (error) {
     console.error(error);
     return c.json({ error: error });

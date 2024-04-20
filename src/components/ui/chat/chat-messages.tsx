@@ -60,8 +60,8 @@ export default function ChatMessages(
         <ChatActions
           reload={props.reload}
           stop={props.stop}
-          showReload={showReload}
-          showStop={showStop}
+          showReload={false}
+          showStop={false}
         />
       </div>
     </div>

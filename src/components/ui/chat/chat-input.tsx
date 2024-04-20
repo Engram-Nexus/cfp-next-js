@@ -8,8 +8,13 @@ import { ChatHandler } from "./chat.interface";
 export default function ChatInput(
   props: Pick<
     ChatHandler,
-    "isLoading" | "input" | "onFileUpload" | "onFileError" | "handleSubmit" | "handleInputChange"
-  >
+    | "isLoading"
+    | "input"
+    | "onFileUpload"
+    | "onFileError"
+    | "handleSubmit"
+    | "handleInputChange"
+  > & { assistantId: string }
 ) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -21,7 +26,11 @@ export default function ChatInput(
       setImageUrl(null);
       return;
     }
-    props.handleSubmit(e);
+    props.handleSubmit(e, {
+      data: {
+        assistantId: props.assistantId,
+      },
+    });
   };
 
   const onRemovePreviewImage = () => setImageUrl(null);
@@ -48,8 +57,13 @@ export default function ChatInput(
   };
 
   return (
-    <form onSubmit={onSubmit} className="rounded-xl bg-white p-4 shadow-xl space-y-4">
-      {imageUrl && <UploadImagePreview url={imageUrl} onRemove={onRemovePreviewImage} />}
+    <form
+      onSubmit={onSubmit}
+      className="rounded-xl bg-white p-4 shadow-xl space-y-4"
+    >
+      {imageUrl && (
+        <UploadImagePreview url={imageUrl} onRemove={onRemovePreviewImage} />
+      )}
       <div className="flex w-full items-start justify-between gap-4 flex-col sm:flex-row z-10 relative">
         <Input
           autoFocus
@@ -60,7 +74,10 @@ export default function ChatInput(
           onChange={props.handleInputChange}
         />
         <div className="flex gap-2">
-          <FileUploader onFileUpload={handleUploadFile} onFileError={props.onFileError} />
+          <FileUploader
+            onFileUpload={handleUploadFile}
+            onFileError={props.onFileError}
+          />
           <Button type="submit" disabled={props.isLoading}>
             Send message
           </Button>
