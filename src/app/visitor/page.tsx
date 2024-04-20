@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/useToast";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { useCallback } from "react";
 
@@ -78,7 +78,7 @@ function VisistorRegister() {
       .then((data) => {
         console.log(data);
         toast({
-          title: "Visitor created succefully. here is the linke",
+          title: "Visitor created succefully. here is the link",
           description: data?.url,
           duration: 6 * 60 * 1000,
         });
