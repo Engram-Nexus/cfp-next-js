@@ -14,10 +14,6 @@ function HeadingSection({
         v === "3" ? "h-full justify-start" : "h-[100dvh]"
       )}
     >
-      <h1 className="text-xl text-center">
-        client-id :{JSON.stringify(clientProfile)}
-      </h1>
-
       <div className="px-8 flex flex-col items-center">
         <p className="text-center text-4xl font-medium text-balance py-8 transition-all duration-700 ease-in-out">
           {clientProfile?.tagline ||

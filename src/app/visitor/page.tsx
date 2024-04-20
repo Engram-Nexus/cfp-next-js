@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/useToast";
 import { cn } from "@/lib/utils";
 import { useCallback } from "react";
 
@@ -40,6 +41,7 @@ const formSchema = z.object({
 });
 
 function VisistorRegister() {
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -72,8 +74,15 @@ function VisistorRegister() {
       },
       body: JSON.stringify(payload),
     })
-      .then((res) => res.json())
-      .then((data) => console.log(data))
+      .then((res) => res.json() as Promise<{ url: string }>)
+      .then((data) => {
+        console.log(data);
+        toast({
+          title: "Visitor created succefully. here is the linke",
+          description: data?.url,
+          duration: 6 * 60 * 1000,
+        });
+      })
       .catch((error) => console.error(error));
   }
 
