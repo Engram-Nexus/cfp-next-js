@@ -41,7 +41,7 @@ const ChatIcon = () => {
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-full mb-10" side="left">
-        <ChatSection />
+        <ChatSection assistantId="123" />
       </PopoverContent>
     </Popover>
   );

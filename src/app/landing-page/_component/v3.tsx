@@ -8,7 +8,15 @@ import HeadingSection from "./HeadingSection";
 import ImageGallery3 from "./ImageGallery3";
 import ImageGalleryMobile from "./ImageGalleryMobile";
 
-function V3({ id, v }: { id: string; v: string }) {
+function V3({
+  clientProfile,
+  visitor,
+  v,
+}: {
+  visitor: any;
+  clientProfile: any;
+  v: string;
+}) {
   return (
     <>
       <div className="hidden lg:block h-[100dvh]">
@@ -23,11 +31,12 @@ function V3({ id, v }: { id: string; v: string }) {
           <ResizablePanel defaultSize={50}>
             <ResizablePanelGroup direction="vertical">
               <ResizablePanel defaultSize={25}>
-                <HeadingSection id={id} v={v} />
+                <HeadingSection clientProfile={clientProfile} v={v} />
               </ResizablePanel>
               <ResizableHandle withHandle />
               <ResizablePanel defaultSize={75} className="h-full">
                 <ChatSection
+                  assistantId={visitor.assistantId}
                   className="flex flex-col overflow-y-auto"
                   flex1={true}
                 />
@@ -37,10 +46,14 @@ function V3({ id, v }: { id: string; v: string }) {
         </ResizablePanelGroup>
       </div>
       <div className="lg:hidden h-screen">
-        <HeadingSection id={id} v={v} />
+        <HeadingSection clientProfile={clientProfile} v={v} />
         <ImageGalleryMobile images={[]} />
 
-        <ChatSection className="flex flex-col overflow-y-auto" flex1={true} />
+        <ChatSection
+          assistantId={visitor.assistantId}
+          className="flex flex-col overflow-y-auto"
+          flex1={true}
+        />
       </div>
     </>
   );

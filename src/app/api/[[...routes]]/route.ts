@@ -199,8 +199,9 @@ app.get("visitor", async (c) => {
     const db = drizzle(ENV.DB);
 
     const result = await db.select().from(visitor).where(eq(visitor.Id, id)).all();
+    const clientProfileData = await db.select().from(clientProfile).where(eq(clientProfile.Id, clientProfileId)).all();
     console.log("result", JSON.stringify(result));
-    return c.json({ result: result[0], Id: result[0].Id, clientProfileId });
+    return c.json({ visitor: result[0], clientProfile: clientProfileData[0] });
 
   } catch (error) {
     console.error(error);

@@ -14,34 +14,32 @@ async function getClientDetails(token: string) {
     const res = await fetch(BASE_URL + "/api/client-profile?token=" + token);
     const data = (await res.json()) as
       | { error: any }
-      | { result: [{ Id: string, }] };
+      | { result: [{ Id: string }] };
     console.log("data", data);
     // @ts-expect-error
     if (data?.error !== undefined) {
       return null;
     }
-    return data as { result: [{ Id: string, }]; };
+    return data as { result: [{ Id: string }] };
   } catch (error) {
     console.error(error);
     return null;
   }
 }
 
-async function getVisitorDetails(token:string) {
+async function getVisitorDetails(token: string) {
   try {
     const res = await fetch(BASE_URL + "/api/visitor?token=" + token);
     const data = (await res.json()) as
       | { error: any }
-      | { result: any,Id: string, clientProfileId: string };
+      | { visitor: any; clientProfile: any };
     console.log("data", data);
     // @ts-expect-error
     if (data?.error !== undefined) {
       return null;
     }
-    return data as { result: { clientProfileId: string },Id: string, clientProfileId: string };
-  } catch (error) {
-    
-  }
+    return data as { clientProfile: any; visitor: any };
+  } catch (error) {}
 }
 
 async function Landing({
@@ -54,14 +52,16 @@ async function Landing({
   if (data === null) {
     notFound();
   }
-  // #TODO : get info of the visitor from the id
-  const Id = data?.result;
 
   return (
     <>
       {v && v === "3" ? (
         <div className="h-screen w-screen">
-          <V3 id={"123"} v="3" />
+          <V3
+            clientProfile={data?.clientProfile}
+            visitor={data?.visitor}
+            v="3"
+          />
         </div>
       ) : (
         <div className="flex flex-col-reverse lg:flex-row relative">
@@ -77,8 +77,7 @@ async function Landing({
               <ImageGalleryMobile images={[]} />
             </div>
           </section>
-          {/* @ts-expect-error */}
-          <HeadingSection id={data?.result} v="1" />
+          <HeadingSection clientProfile={data?.clientProfile} v="1" />
           <div className="fixed bottom-10 right-10">
             <ChatIcon />
           </div>
