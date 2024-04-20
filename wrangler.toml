@@ -20,10 +20,14 @@ compatibility_flags = ["nodejs_compat"]
 # database_name = "my-database"
 # database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
+#[[d1_databases]]
+#binding = "DB" # i.e. available in your Worker on env.DB
+#database_name = "project-manager"
+#database_id = "42e81d1d-c1f7-45ab-9542-d8c740f356bc"
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
-database_name = "project-manager"
-database_id = "42e81d1d-c1f7-45ab-9542-d8c740f356bc"
+database_name = "prod-d2-tutorial"
+database_id = "b349a102-4681-48b0-9855-911cf9660597"
 
 # Bind a Durable Object. Durable objects are a scale-to-zero compute primitive based on the actor model.
 # Durable Objects can live for as long as needed. Use these when you need a long-running "server", such as in realtime apps.

@@ -102,21 +102,22 @@ app.post("register", async (c) => {
       tagline,
       website,
       dateCreated: Math.floor(Date.now() / 1000),
+      logoR2:undefined
     };
 
     try {
       insertClientProfileSchema.parse(payload);
     } catch (error) {
       console.error(error);
-      return c.json({ error: error });
+      return c.json({ error: JSON.stringify(error), message : "failed to validate" });
     }
 
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
 
-    await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS client-profiles (id TEXT PRIMARY KEY, dateCreated INTEGER, companyName TEXT, description TEXT, linkedinUrl TEXT, logo TEXT, tagline TEXT, website TEXT)"
-    ).run();
+    // await ENV.DB.prepare(
+    //   "CREATE TABLE IF NOT EXISTS client-profiles (id TEXT PRIMARY KEY, dateCreated INTEGER, companyName TEXT, description TEXT, linkedinUrl TEXT, logo TEXT, tagline TEXT, website TEXT logoR2 TEXT)"
+    // ).run();
 
     const inserted = await db.insert(clientProfile).values(payload).returning();
 
@@ -128,7 +129,7 @@ app.post("register", async (c) => {
     });
   } catch (error) {
     console.error(error);
-    return c.json({ error: error });
+    return c.json({ error: JSON.stringify(error), message: "failed to register" });
   }
 });
 
@@ -162,14 +163,14 @@ app.post("visitor", async (c) => {
       insertVisitorSchema.parse(payload);
     } catch (error) {
       console.error(error);
-      return c.json({ error: error });
+      return c.json({ error: error, message : "failed to validate" });
     }
 
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
 
     await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages TEXT, imageUrls TEXT, firstName TEXT, clientProfileId TEXT, colors TEXT)"
+      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT assistantId TEXT)"
     ).run();
 
     const result = await db.insert(visitor).values(payload).returning();
@@ -179,7 +180,7 @@ app.post("visitor", async (c) => {
     return c.json({ url });
   } catch (error) {
     console.error(error);
-    return c.json({ error: error });
+    return c.json({ error: error, message: "failed to register new visitor" });
   }
 });
 

@@ -25,7 +25,9 @@ function V3({
           className="h-full w-full rounded-lg border"
         >
           <ResizablePanel defaultSize={50} className="max-w-[50vw]">
-            <ImageGallery3 images={[]} />
+            {/* <ImageGallery3 images={[]} /> */}
+            {JSON.stringify(clientProfile)}
+            {/* {JSON.stringify(visitor)} */}
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={50}>
@@ -36,7 +38,7 @@ function V3({
               <ResizableHandle withHandle />
               <ResizablePanel defaultSize={75} className="h-full">
                 <ChatSection
-                  assistantId={visitor.assistantId}
+                  assistantId={visitor?.assistantId}
                   className="flex flex-col overflow-y-auto"
                   flex1={true}
                 />
@@ -50,7 +52,7 @@ function V3({
         <ImageGalleryMobile images={[]} />
 
         <ChatSection
-          assistantId={visitor.assistantId}
+          assistantId={visitor?.assistantId}
           className="flex flex-col overflow-y-auto"
           flex1={true}
         />

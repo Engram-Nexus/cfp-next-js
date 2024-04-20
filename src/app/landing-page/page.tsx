@@ -39,7 +39,10 @@ async function getVisitorDetails(token: string) {
       return null;
     }
     return data as { clientProfile: any; visitor: any };
-  } catch (error) {}
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 async function Landing({
