@@ -25,9 +25,7 @@ function V3({
           className="h-full w-full rounded-lg border"
         >
           <ResizablePanel defaultSize={50} className="max-w-[50vw]">
-            {/* <ImageGallery3 images={[]} /> */}
-            {JSON.stringify(clientProfile)}
-            {/* {JSON.stringify(visitor)} */}
+            <ImageGallery3 images={[]} />
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={50}>

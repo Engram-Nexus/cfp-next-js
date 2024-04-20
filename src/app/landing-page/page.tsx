@@ -29,11 +29,10 @@ async function getClientDetails(token: string) {
 
 async function getVisitorDetails(token: string) {
   try {
-    const res = await fetch(BASE_URL + "/api/visitor?token=" + token);
+    const res = await fetch(BASE_URL+"/api/visitor?token=" + token);
     const data = (await res.json()) as
       | { error: any }
       | { visitor: any; clientProfile: any };
-    console.log("data", data);
     // @ts-expect-error
     if (data?.error !== undefined) {
       return null;
