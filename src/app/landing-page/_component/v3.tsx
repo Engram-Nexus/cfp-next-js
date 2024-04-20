@@ -5,19 +5,19 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import HeadingSection from "./HeadingSection";
-import ImageGallery from "./ImageGallery";
+import ImageGallery3 from "./ImageGallery3";
 import ImageGalleryMobile from "./ImageGalleryMobile";
 
 function V3({ id, v }: { id: string; v: string }) {
   return (
     <>
-      <div className="hidden lg:block">
+      <div className="hidden lg:block h-[100dvh]">
         <ResizablePanelGroup
           direction="horizontal"
           className="h-full w-full rounded-lg border"
         >
           <ResizablePanel defaultSize={50} className="max-w-[50vw]">
-            <ImageGallery images={[]} />
+            <ImageGallery3 images={[]} />
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={50}>
