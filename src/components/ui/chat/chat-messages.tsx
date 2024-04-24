@@ -1,14 +1,16 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import { cn } from "@/lib/utils";
 import ChatActions from "./chat-actions";
 import ChatMessage from "./chat-message";
 import { ChatHandler } from "./chat.interface";
-import { cn } from "@/lib/utils";
 
 export default function ChatMessages(
   props: Pick<ChatHandler, "messages" | "isLoading" | "reload" | "stop"> & {
     flex1?: boolean;
+    chatHistory?: any;
+    welcomeMessage: string;
   }
 ) {
   const scrollableChatContainerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +39,8 @@ export default function ChatMessages(
     scrollToBottom();
   }, [messageLength, lastMessage]);
 
+  // const reversedChats = props?.newMessages?.toReversed();
+
   return (
     <div
       className={cn("w-full rounded-xl bg-white p-4 shadow-xl pb-0", {
@@ -47,7 +51,21 @@ export default function ChatMessages(
         className="flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4"
         ref={scrollableChatContainerRef}
       >
-        {props.messages.map((m) => (
+        {props?.welcomeMessage ? (
+          <ChatMessage
+            role="assistant"
+            id="welcome"
+            content={props.welcomeMessage}
+          />
+        ) : null}
+        {props?.chatHistory?.map((m: any) =>
+          m?.content?.map((messages: any) => {
+            return (
+              <ChatMessage key={m.id} {...m} content={messages.text.value} />
+            );
+          })
+        )}
+        {props?.messages.map((m) => (
           <ChatMessage key={m.id} {...m} />
         ))}
         {isPending && (

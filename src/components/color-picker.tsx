@@ -22,22 +22,24 @@ const ColorPicker = ({
 }: {
   setColors: (colors: string[] | undefined) => void;
 }) => {
-  const [colors, setColorsValue] = React.useState<string[] | undefined>();
+  const [colors, setColorsValue] = React.useState<string[] | undefined |Partial<IColor> >();
 
   const onColorChange = React.useCallback(
     (color: Partial<IColor>) => {
-      setColorsValue((prev) => ({
-        ...(prev ? prev : {}),
-        ...Object.values(color),
-      }));
+      setColorsValue((prev) => {
+        return{
+          ...(prev ? prev : {}),
+          ...color,
+      }})
     },
     [setColorsValue]
   );
-
+  
   React.useEffect(() => {
     if (!colors) return;
     setColors(Object.values(colors));
   }, [colors, setColors]);
+
 
   return (
     <Card className="w-full max-w-md">

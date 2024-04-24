@@ -1,5 +1,4 @@
 import { Check, Copy } from "lucide-react";
-
 import { JSONValue, Message } from "ai";
 import Image from "next/image";
 import { Button } from "../button";

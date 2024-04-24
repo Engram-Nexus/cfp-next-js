@@ -1,9 +1,4 @@
-import { Hono } from "hono";
-import { handle } from "hono/vercel";
-import { getRequestContext } from "@cloudflare/next-on-pages";
-import { StreamingTextResponse } from "ai";
 import { BASE_URL, ENGRAM_API_URL } from "@/constants";
-import { drizzle } from "drizzle-orm/d1";
 import {
   clientProfile,
   insertClientProfileSchema,
@@ -12,11 +7,20 @@ import {
 } from "@/db/schema/schema";
 import { decrypt, encrypt } from "@/lib/jwt";
 import { generateUUID } from "@/lib/utils";
+import { getRequestContext } from "@cloudflare/next-on-pages";
+import { StreamingTextResponse } from "ai";
 import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
+import { Hono } from "hono";
+import { handle } from "hono/vercel";
+import OpenAI from "openai";
 import { runAssistant } from "./assistant/assistantApi";
 
 export const runtime = "edge";
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 const app = new Hono<{
   Bindings: { NEXT_PUBLIC_BASE_URL: string; DB: D1Database };
 }>().basePath("/api");
@@ -64,9 +68,9 @@ app.post("assistant", async (c) => {
   const input: {
     threadId: string | null;
     message: string;
-    data:{
-      [key:string]: any
-    }
+    data: {
+      [key: string]: any;
+    };
   } = await c.req.json();
 
   if (!input) {
@@ -75,8 +79,11 @@ app.post("assistant", async (c) => {
   if (!input?.data?.assistantId) {
     return c.json({ error: "No assistantId provided" });
   }
-
-  return runAssistant({...input, assistantId: input?.data?.assistantId});
+  return runAssistant({
+    ...input,
+    assistantId: input?.data?.assistantId,
+    threadId: input?.data?.threadId ? input?.data?.threadId : null,
+  });
 });
 
 // D1 database
@@ -102,14 +109,17 @@ app.post("register", async (c) => {
       tagline,
       website,
       dateCreated: Math.floor(Date.now() / 1000),
-      logoR2:undefined
+      logoR2: undefined,
     };
 
     try {
       insertClientProfileSchema.parse(payload);
     } catch (error) {
       console.error(error);
-      return c.json({ error: JSON.stringify(error), message : "failed to validate" });
+      return c.json({
+        error: JSON.stringify(error),
+        message: "failed to validate",
+      });
     }
 
     const ENV = getRequestContext().env;
@@ -129,24 +139,38 @@ app.post("register", async (c) => {
     });
   } catch (error) {
     console.error(error);
-    return c.json({ error: JSON.stringify(error), message: "failed to register" });
+    return c.json({
+      error: JSON.stringify(error),
+      message: "failed to register",
+    });
   }
 });
 
 app.post("visitor", async (c) => {
   try {
-    const { email, messages, imageUrls, firstName, clientProfileId, colors, assistantId } =
-      (await c.req.json()) as {
-        email: string;
-        messages: string[];
-        imageUrls: string[];
-        firstName: string;
-        clientProfileId: string;
-        colors: string[];
-        assistantId: string;
-      };
+    const {
+      email,
+      messages,
+      imageUrls,
+      firstName,
+      clientProfileId,
+      colors,
+      assistantId,
+      welcomeMessage,
+    } = (await c.req.json()) as {
+      email: string;
+      messages: string[];
+      imageUrls: string[];
+      firstName: string;
+      clientProfileId: string;
+      colors: string[];
+      assistantId: string;
+      welcomeMessage: string;
+    };
 
     const Id = generateUUID();
+    const threadId = (await openai.beta.threads.create({})).id;
+
     const payload = {
       Id,
       email,
@@ -156,6 +180,8 @@ app.post("visitor", async (c) => {
       clientProfileId,
       colors,
       assistantId,
+      threadId: threadId,
+      welcomeMessage,
       dateCreated: Math.floor(Date.now() / 1000),
     };
 
@@ -163,14 +189,14 @@ app.post("visitor", async (c) => {
       insertVisitorSchema.parse(payload);
     } catch (error) {
       console.error(error);
-      return c.json({ error: error, message : "failed to validate" });
+      return c.json({ error: error, message: "failed to validate" });
     }
 
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
-
+    // const db = drizzle(c.env.DB);
     await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT assistantId TEXT)"
+      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT, assistantId TEXT, threadId TEXT, welcomeMessage TEXT)"
     ).run();
 
     const result = await db.insert(visitor).values(payload).returning();
@@ -186,30 +212,37 @@ app.post("visitor", async (c) => {
 
 app.get("visitor", async (c) => {
   try {
-  const { token } = c.req.query();
-  if (!token) {
-    return c.json({ error: "No token provided" });
-  }
-  const decrypted = await decrypt(token);
-  if (decrypted === null) {
-    return c.json({ error: "Invalid token" });
-  }
-  const id = decrypted.id;
-  const clientProfileId = decrypted.clientProfileId;
+    const { token } = c.req.query();
+    if (!token) {
+      return c.json({ error: "No token provided" });
+    }
+    const decrypted = await decrypt(token);
+    if (decrypted === null) {
+      return c.json({ error: "Invalid token" });
+    }
+    const id = decrypted.id;
+    const clientProfileId = decrypted.clientProfileId;
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
+    // const db = drizzle(c.env.DB);
 
-    const result = await db.select().from(visitor).where(eq(visitor.Id, id)).all();
-    const clientProfileData = await db.select().from(clientProfile).where(eq(clientProfile.Id, clientProfileId)).all();
+    const result = await db
+      .select()
+      .from(visitor)
+      .where(eq(visitor.Id, id))
+      .all();
+    const clientProfileData = await db
+      .select()
+      .from(clientProfile)
+      .where(eq(clientProfile.Id, clientProfileId))
+      .all();
     console.log("result", JSON.stringify(result));
     return c.json({ visitor: result[0], clientProfile: clientProfileData[0] });
-
   } catch (error) {
     console.error(error);
     return c.json({ error: error });
   }
-
-})
+});
 
 app.get("client-profile", async (c) => {
   try {
@@ -232,7 +265,28 @@ app.get("client-profile", async (c) => {
       .where(eq(clientProfile.Id, id))
       .all();
     console.log("result", JSON.stringify(result));
-    return c.json({ result:result[0], id });
+    return c.json({ result: result[0], id });
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: error });
+  }
+});
+
+app.get("get-chat-history", async (c) => {
+  const { threadId } = c.req.query();
+  const ENV = getRequestContext().env;
+  try {
+    const openAI = new OpenAI({
+      apiKey: ENV.OPENAI_API_KEY,
+    });
+    if (!threadId) {
+      return c.json({ error: "No threadId provided" });
+    }
+    const messages = await openAI.beta.threads.messages.list(threadId, {
+      order: "asc",
+    });
+
+    return c.json({ messages });
   } catch (error) {
     console.error(error);
     return c.json({ error: error });

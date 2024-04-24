@@ -20,7 +20,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 const formSchema = z.object({
   email: z
@@ -38,10 +47,12 @@ const formSchema = z.object({
     .min(36, { message: "Invalid clientProfileId" })
     .max(36, { message: "Invalid clientProfileId" }),
   colors: z.array(z.string().min(1, { message: "Colors are required" })),
+  welcomeMessage: z.string().min(2, { message: "Welcome message is required" }),
 });
 
 function VisistorRegister() {
   const { toast } = useToast();
+  const [visitorUrl, setVisitorUrl] = useState<string | undefined>(undefined);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,6 +63,7 @@ function VisistorRegister() {
       email: "",
       colors: undefined,
       assistantId: "",
+      welcomeMessage: "",
     },
   });
 
@@ -66,6 +78,7 @@ function VisistorRegister() {
       clientProfileId: values.clientProfileId,
       colors: values.colors,
       assistantId: values.assistantId,
+      welcomeMessage: values.welcomeMessage,
     };
     fetch("/api/visitor", {
       method: "POST",
@@ -77,13 +90,20 @@ function VisistorRegister() {
       .then((res) => res.json() as Promise<{ url: string }>)
       .then((data) => {
         console.log(data);
+        if (data.url === undefined) return;
+        // setVisitorUrl(data.url);
         toast({
           title: "Visitor created succefully. here is the link",
-          description: data?.url,
-          duration: 6 * 60 * 1000,
+          description: (
+            <a className="text-blue-400 font-semibold" href={data.url}>
+              Click here
+            </a>
+          ),
         });
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   const setMessages = useCallback(
@@ -93,6 +113,7 @@ function VisistorRegister() {
     },
     [form]
   );
+
   const setImageUrls = useCallback(
     (imageUrls: string[] | undefined) => {
       if (imageUrls === undefined) return;
@@ -107,10 +128,10 @@ function VisistorRegister() {
     },
     [form]
   );
-
+  // console.log(visitorUrl , "rth")
   return (
     <div className="flex items-center justify-center">
-      <Card className={cn("max-w-fit m-6 h-full")}>
+      <Card className={cn("max-w-xl m-6 h-full ")}>
         <CardHeader>
           <CardTitle className="text-2xl font-sans">Visitor</CardTitle>
         </CardHeader>
@@ -176,6 +197,19 @@ function VisistorRegister() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="welcomeMessage"
+                  render={({ field }) => (
+                    <FormItem className="col-span-4 mx-1">
+                      <FormLabel>Welcome Message</FormLabel>
+                      <FormControl>
+                        <Input placeholder="welcome message...." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -233,7 +267,18 @@ function VisistorRegister() {
                   )}
                 />
               </div>
-              <Button type="submit">Submit</Button>
+              <div className="flex justify-center">
+                {/* {visitorUrl&&<Dialog open={ true } >
+<DialogClose>Close</DialogClose>
+  <DialogContent>
+      <DialogTitle>Visitor created succefully. here is the link</DialogTitle>
+      <DialogDescription className="max-w-fit">
+{visitorUrl}
+      </DialogDescription>
+  </DialogContent>
+</Dialog>} */}
+                <Button type="submit">Submit</Button>
+              </div>
             </form>
           </Form>
         </CardContent>

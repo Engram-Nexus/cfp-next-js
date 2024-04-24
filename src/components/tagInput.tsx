@@ -20,11 +20,11 @@ const TagInput = React.forwardRef<HTMLTextAreaElement, TagInputProps>(
     return (
       <>
         <div className="flex flex-col min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-          <div className="flex flex-col gap-2 justify-center my-2">
+          <div className="flex flex-wrap gap-2 items-center my-2">
             {tags?.map((tag, index) => (
               <span
-                key={index}
-                className="flex justify-between mr-1 bg-zinc-300 text-black px-4 py-1 rounded-sm"
+                key={index} 
+                className="flex justify-between gap-1 items-center mr-1  bg-[#7cb1ee] text-white font-semibold px-4 py-1 rounded-sm"
               >
                 {tag}
                 <span

@@ -14,7 +14,7 @@ export default function ChatInput(
     | "onFileError"
     | "handleSubmit"
     | "handleInputChange"
-  > & { assistantId: string }
+  > & { assistantId: string, threadId: string| null }
 ) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -29,10 +29,10 @@ export default function ChatInput(
     props.handleSubmit(e, {
       data: {
         assistantId: props.assistantId,
+        threadId: props.threadId,
       },
     });
   };
-
   const onRemovePreviewImage = () => setImageUrl(null);
 
   const handleUploadImageFile = async (file: File) => {

@@ -1,17 +1,10 @@
 import { cn } from "@/lib/utils";
 
-function HeadingSection({
-  clientProfile,
-  v,
-}: {
-  clientProfile: any;
-  v: string;
-}) {
+function HeadingSection({ clientProfile }: { clientProfile: any }) {
   return (
     <section
       className={cn(
-        "flex-1 font-medium text-4xl flex flex-col items-center justify-betwee overflow-auto",
-        v === "3" ? "h-full justify-start" : "h-[100dvh]"
+        "flex-1 font-medium text-4xl flex flex-col items-center justify-betwee overflow-auto h-full justify-start"
       )}
     >
       <div className="px-8 flex flex-col items-center">

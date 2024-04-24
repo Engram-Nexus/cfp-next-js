@@ -24,6 +24,8 @@ export const visitor = sqliteTable("visitors", {
   clientProfileId: text("clientProfileId", { length: 256 }).notNull(),
   colors: text("colors", { mode: "json" }),
   assistantId: text("assistantId", { length: 256 }).notNull(),
+  threadId: text("threadId", { length: 256 }).notNull(),
+  welcomeMessage: text("welcomeMessage", { length: 256 }).notNull(),
 })
 
 export const clientRelations = relations(clientProfile,
