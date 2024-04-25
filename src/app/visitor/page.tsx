@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, LoaderCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 
 const formSchema = z.object({
@@ -52,6 +52,7 @@ const formSchema = z.object({
 function VisistorRegister() {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 });
   const [visitorUrl, setVisitorUrl] = useState<string | undefined>(undefined);
+  const [isloading, setIsloading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,6 +70,7 @@ function VisistorRegister() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    setIsloading(true);
     // #TODO : submit this info to the api
     const payload = {
       email: values.email,
@@ -93,6 +95,7 @@ function VisistorRegister() {
         if (data.url === undefined) return;
         setVisitorUrl(data.url);
         setIsDialogOpen(true);
+        setIsloading(false);
       })
       .catch((error) => {
         console.error(error);
@@ -272,17 +275,15 @@ function VisistorRegister() {
                       </DialogHeader>
                       <DialogDescription className="flex justify-start">
                         {
-                          <a className="break-all text-blue-400" href={visitorUrl}>
-                           {visitorUrl}
+                          <a
+                            className="break-all text-blue-400"
+                            href={visitorUrl}
+                          >
+                            {visitorUrl}
                           </a>
                         }
                         <Button
-                          onClick={() =>
-                            copyToClipboard(
-                              visitorUrl ||
-                              ""
-                            )
-                          }
+                          onClick={() => copyToClipboard(visitorUrl || "")}
                           size="icon"
                           variant="outline"
                           className="h-8 w-8 flex-shrink-0"
@@ -297,7 +298,17 @@ function VisistorRegister() {
                     </DialogContent>
                   </Dialog>
                 )}
-                <Button type="submit">Submit</Button>
+                {isloading === true ? (
+                  <Button
+                    disabled
+                    className="flex items-center justify-center gap-4"
+                  >
+                    Submitting
+                    <LoaderCircle className="animate-spin" />
+                  </Button>
+                ) : (
+                  <Button type="submit">Submit</Button>
+                )}
               </div>
             </form>
           </Form>

@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { createInsertSchema,createSelectSchema } from "drizzle-zod"
+import { createInsertSchema } from "drizzle-zod";
 
 export const clientProfile = sqliteTable("client-profiles", {
   Id: text("id", { length: 256 }).primaryKey(),
@@ -26,19 +26,47 @@ export const visitor = sqliteTable("visitors", {
   assistantId: text("assistantId", { length: 256 }).notNull(),
   threadId: text("threadId", { length: 256 }).notNull(),
   welcomeMessage: text("welcomeMessage", { length: 256 }).notNull(),
-})
+});
 
-export const clientRelations = relations(clientProfile,
-  ({many})=>({
-    visitor:many(visitor)
-  })
-)
+export const campaigns = sqliteTable("campaigns", {
+  Id: text("id", { length: 256 }).primaryKey(),
+  dateCreated: integer("dateCreated", { mode: "number" }).notNull(),
+  name: text("name", { length: 256 }),
+  description: text("description", { length: 256 }),
+});
 
-export const visitorRelations = relations(visitor,
-  ({one})=>({
-    clientProfileId: one(clientProfile, { fields: [visitor.clientProfileId], references: [clientProfile.Id] }),
-  })
-)
+export const leads = sqliteTable("leads", {
+  Id: text("id", { length: 256 }).primaryKey(),
+  dateCreated: integer("dateCreated", { mode: "number" }).notNull(),
+  firstName: text("firstName", { length: 256 }).notNull(),
+  lastName: text("lastName", { length: 256 }).notNull(),
+  email: text("email", { length: 256 }).notNull(),
+  linkedinUrl: text("linkedinUrl", { length: 256 }).notNull(),
+  campaignId: text("campaignId", { length: 256 }),
+  linkedinrawProfileId: text("linkedinrawProfileId", { length: 256 }),
+});
+
+export const clientRelations = relations(clientProfile, ({ many }) => ({
+  visitor: many(visitor),
+}));
+
+export const visitorRelations = relations(visitor, ({ one }) => ({
+  clientProfileId: one(clientProfile, {
+    fields: [visitor.clientProfileId],
+    references: [clientProfile.Id],
+  }),
+}));
+
+export const campaignsRelations = relations(campaigns, ({ many }) => ({
+  leads: many(leads),
+}));
+export const leadsRelations = relations(leads, ({ one }) => ({
+  campaignId: one(campaigns, {
+    fields: [leads.campaignId],
+    references: [campaigns.Id],
+  }),
+}));
 
 export const insertClientProfileSchema = createInsertSchema(clientProfile);
 export const insertVisitorSchema = createInsertSchema(visitor);
+export const insertLeadsSchema = createInsertSchema(leads);
