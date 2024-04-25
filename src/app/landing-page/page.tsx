@@ -11,7 +11,7 @@ import ImageGalleryMobile from "./_component/ImageGalleryMobile";
 
 export const runtime = "edge";
 
-export async function getVisitorDetails(token: string): Promise<{
+async function getVisitorDetails(token: string): Promise<{
   clientProfile: any;
   visitor: any;
 } | null> {

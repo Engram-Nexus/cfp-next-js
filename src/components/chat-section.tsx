@@ -18,7 +18,7 @@ export default function ChatSection({
   visitorThreadId: string;
   welcomeMessage: string;
 }) {
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState<any>([]);
   const {
     messages,
     input,
@@ -31,16 +31,12 @@ export default function ChatSection({
   });
 
   const getChatsHistory = useCallback(async () => {
-    const messages = await fetch(
-      "/api/chat/history?threadId=" + visitorThreadId
-    )
-      .then((res) => res.json())
-      .then((result) => {
-        console.log("result", result);
-        // @ts-ignore
-        setChatHistory(result?.messages?.data);
-      });
-    return messages;
+    const res = await fetch("/api/chat/history?threadId=" + visitorThreadId);
+    if (!res.ok) {
+      throw new Error("Failed to fetch chat history");
+    }
+    const result = (await res.json()) as { messages: { data: any[] } };
+    setChatHistory(result?.messages?.data);
   }, [visitorThreadId]);
 
   useEffect(() => {
@@ -52,7 +48,6 @@ export default function ChatSection({
       <ChatMessages
         welcomeMessage={welcomeMessage}
         messages={messages}
-        // @ts-ignore
         chatHistory={chatHistory}
         isLoading={status === "in_progress"}
         reload={() => {
