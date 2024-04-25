@@ -32,7 +32,7 @@ export default function ChatSection({
 
   const getChatsHistory = useCallback(async () => {
     const messages = await fetch(
-      "/api/get-chat-history?threadId=" + visitorThreadId
+      "/api/chat/history?threadId=" + visitorThreadId
     )
       .then((res) => res.json())
       .then((result) => {

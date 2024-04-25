@@ -8,6 +8,14 @@ import ColorPicker from "@/components/color-picker";
 import TagInput from "@/components/tagInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCopyToClipboard } from "@/components/ui/chat/use-copy-to-clipboard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,18 +26,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { Check, Copy } from "lucide-react";
 import { useCallback, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { DialogClose } from "@radix-ui/react-dialog";
 
 const formSchema = z.object({
   email: z
@@ -51,8 +50,9 @@ const formSchema = z.object({
 });
 
 function VisistorRegister() {
-  const { toast } = useToast();
+  const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 });
   const [visitorUrl, setVisitorUrl] = useState<string | undefined>(undefined);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -91,15 +91,8 @@ function VisistorRegister() {
       .then((data) => {
         console.log(data);
         if (data.url === undefined) return;
-        // setVisitorUrl(data.url);
-        toast({
-          title: "Visitor created succefully. here is the link",
-          description: (
-            <a className="text-blue-400 font-semibold" href={data.url}>
-              Click here
-            </a>
-          ),
-        });
+        setVisitorUrl(data.url);
+        setIsDialogOpen(true);
       })
       .catch((error) => {
         console.error(error);
@@ -268,15 +261,42 @@ function VisistorRegister() {
                 />
               </div>
               <div className="flex justify-center">
-                {/* {visitorUrl&&<Dialog open={ true } >
-<DialogClose>Close</DialogClose>
-  <DialogContent>
-      <DialogTitle>Visitor created succefully. here is the link</DialogTitle>
-      <DialogDescription className="max-w-fit">
-{visitorUrl}
-      </DialogDescription>
-  </DialogContent>
-</Dialog>} */}
+                {isDialogOpen && (
+                  <Dialog
+                    open={isDialogOpen}
+                    onOpenChange={() => setIsDialogOpen(false)}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Visitor created successfully</DialogTitle>
+                      </DialogHeader>
+                      <DialogDescription className="flex justify-start">
+                        {
+                          <a className="break-all text-blue-400" href={visitorUrl}>
+                           {visitorUrl}
+                          </a>
+                        }
+                        <Button
+                          onClick={() =>
+                            copyToClipboard(
+                              visitorUrl ||
+                              ""
+                            )
+                          }
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 flex-shrink-0"
+                        >
+                          {isCopied ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </DialogDescription>
+                    </DialogContent>
+                  </Dialog>
+                )}
                 <Button type="submit">Submit</Button>
               </div>
             </form>

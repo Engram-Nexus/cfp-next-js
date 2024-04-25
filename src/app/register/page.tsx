@@ -45,7 +45,7 @@ function RegisterPage() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     // #TODO : submit this info to the api
-    fetch("/api/register", {
+    fetch("/api/client-profile", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

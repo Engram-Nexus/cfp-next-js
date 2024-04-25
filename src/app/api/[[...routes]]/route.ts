@@ -14,7 +14,11 @@ import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import OpenAI from "openai";
-import { runAssistant } from "./assistant/assistantApi";
+import { runAssistant } from "./lib/assistant/assistantApi";
+import clientProfileApi from "./clientProfile";
+import visitorApi from "./visitor";
+import chats from "./chats";
+import assistantApi from "./assistant";
 
 export const runtime = "edge";
 
@@ -24,6 +28,11 @@ const openai = new OpenAI({
 const app = new Hono<{
   Bindings: { NEXT_PUBLIC_BASE_URL: string; DB: D1Database };
 }>().basePath("/api");
+
+app.route("/visitor", visitorApi)
+app.route("/chat",chats)
+app.route("/client-profile", clientProfileApi)
+app.route("/assistant", assistantApi)
 
 app.get("/hello", (c) => {
   const ENV = getRequestContext().env;
@@ -45,253 +54,10 @@ app.post("time", async (c) => {
   return c.json({ message: `success after waiting for ${time} seconds` });
 });
 
-app.post("chat", async (c) => {
-  const { messages } = (await c.req.json()) as { messages: string[] };
 
-  const response = (await fetch(ENGRAM_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      type: "prompt",
-      message: messages,
-    }),
-    // casting this type as HONO returns the body as a ReadableStream
-  })) as { body: ReadableStream<Uint8Array> };
-
-  return new StreamingTextResponse(response.body);
-});
-
-app.post("assistant", async (c) => {
-  // parse the request body
-  const input: {
-    threadId: string | null;
-    message: string;
-    data: {
-      [key: string]: any;
-    };
-  } = await c.req.json();
-
-  if (!input) {
-    return c.json({ error: "No input provided" });
-  }
-  if (!input?.data?.assistantId) {
-    return c.json({ error: "No assistantId provided" });
-  }
-  return runAssistant({
-    ...input,
-    assistantId: input?.data?.assistantId,
-    threadId: input?.data?.threadId ? input?.data?.threadId : null,
-  });
-});
 
 // D1 database
-app.post("register", async (c) => {
-  try {
-    const { companyName, description, linkedinUrl, logo, tagline, website } =
-      (await c.req.json()) as {
-        companyName: string;
-        logo: string;
-        description: string;
-        tagline: string;
-        website: string;
-        linkedinUrl: string;
-      };
-    const Id = generateUUID();
 
-    const payload = {
-      Id,
-      companyName,
-      description,
-      linkedinUrl,
-      logo,
-      tagline,
-      website,
-      dateCreated: Math.floor(Date.now() / 1000),
-      logoR2: undefined,
-    };
-
-    try {
-      insertClientProfileSchema.parse(payload);
-    } catch (error) {
-      console.error(error);
-      return c.json({
-        error: JSON.stringify(error),
-        message: "failed to validate",
-      });
-    }
-
-    const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-
-    // await ENV.DB.prepare(
-    //   "CREATE TABLE IF NOT EXISTS client-profiles (id TEXT PRIMARY KEY, dateCreated INTEGER, companyName TEXT, description TEXT, linkedinUrl TEXT, logo TEXT, tagline TEXT, website TEXT logoR2 TEXT)"
-    // ).run();
-
-    const inserted = await db.insert(clientProfile).values(payload).returning();
-
-    console.log(`inserted: ${JSON.stringify(inserted)}`);
-
-    return c.json({
-      message: `Registered ${companyName}`,
-      data: inserted,
-    });
-  } catch (error) {
-    console.error(error);
-    return c.json({
-      error: JSON.stringify(error),
-      message: "failed to register",
-    });
-  }
-});
-
-app.post("visitor", async (c) => {
-  try {
-    const {
-      email,
-      messages,
-      imageUrls,
-      firstName,
-      clientProfileId,
-      colors,
-      assistantId,
-      welcomeMessage,
-    } = (await c.req.json()) as {
-      email: string;
-      messages: string[];
-      imageUrls: string[];
-      firstName: string;
-      clientProfileId: string;
-      colors: string[];
-      assistantId: string;
-      welcomeMessage: string;
-    };
-
-    const Id = generateUUID();
-    const threadId = (await openai.beta.threads.create({})).id;
-
-    const payload = {
-      Id,
-      email,
-      messages,
-      imageUrls,
-      firstName,
-      clientProfileId,
-      colors,
-      assistantId,
-      threadId: threadId,
-      welcomeMessage,
-      dateCreated: Math.floor(Date.now() / 1000),
-    };
-
-    try {
-      insertVisitorSchema.parse(payload);
-    } catch (error) {
-      console.error(error);
-      return c.json({ error: error, message: "failed to validate" });
-    }
-
-    const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-    // const db = drizzle(c.env.DB);
-    await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT, assistantId TEXT, threadId TEXT, welcomeMessage TEXT)"
-    ).run();
-
-    const result = await db.insert(visitor).values(payload).returning();
-    const insertedId = result[0].Id;
-    const token = await encrypt({ id: insertedId, clientProfileId });
-    const url = BASE_URL + "/landing-page?token=" + token;
-    return c.json({ url });
-  } catch (error) {
-    console.error(error);
-    return c.json({ error: error, message: "failed to register new visitor" });
-  }
-});
-
-app.get("visitor", async (c) => {
-  try {
-    const { token } = c.req.query();
-    if (!token) {
-      return c.json({ error: "No token provided" });
-    }
-    const decrypted = await decrypt(token);
-    if (decrypted === null) {
-      return c.json({ error: "Invalid token" });
-    }
-    const id = decrypted.id;
-    const clientProfileId = decrypted.clientProfileId;
-    const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-    // const db = drizzle(c.env.DB);
-
-    const result = await db
-      .select()
-      .from(visitor)
-      .where(eq(visitor.Id, id))
-      .all();
-    const clientProfileData = await db
-      .select()
-      .from(clientProfile)
-      .where(eq(clientProfile.Id, clientProfileId))
-      .all();
-    console.log("result", JSON.stringify(result));
-    return c.json({ visitor: result[0], clientProfile: clientProfileData[0] });
-  } catch (error) {
-    console.error(error);
-    return c.json({ error: error });
-  }
-});
-
-app.get("client-profile", async (c) => {
-  try {
-    const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-
-    const { token } = c.req.query();
-    if (!token) {
-      return c.json({ error: "No token provided" });
-    }
-    const decrypted = await decrypt(token);
-    if (decrypted === null) {
-      return c.json({ error: "Invalid token" });
-    }
-    const id = decrypted.id;
-
-    const result = await db
-      .select()
-      .from(clientProfile)
-      .where(eq(clientProfile.Id, id))
-      .all();
-    console.log("result", JSON.stringify(result));
-    return c.json({ result: result[0], id });
-  } catch (error) {
-    console.error(error);
-    return c.json({ error: error });
-  }
-});
-
-app.get("get-chat-history", async (c) => {
-  const { threadId } = c.req.query();
-  const ENV = getRequestContext().env;
-  try {
-    const openAI = new OpenAI({
-      apiKey: ENV.OPENAI_API_KEY,
-    });
-    if (!threadId) {
-      return c.json({ error: "No threadId provided" });
-    }
-    const messages = await openAI.beta.threads.messages.list(threadId, {
-      order: "asc",
-    });
-
-    return c.json({ messages });
-  } catch (error) {
-    console.error(error);
-    return c.json({ error: error });
-  }
-});
 
 export const GET = handle(app);
 export const POST = handle(app);
