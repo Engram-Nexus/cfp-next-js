@@ -11,35 +11,28 @@ import ImageGalleryMobile from "./_component/ImageGalleryMobile";
 
 export const runtime = "edge";
 
-async function getClientDetails(token: string) {
-  try {
-    const res = await fetch(BASE_URL + "/api/client-profile?token=" + token);
-    const data = (await res.json()) as
-      | { error: any }
-      | { result: [{ Id: string }] };
-    console.log("data", data);
-    // @ts-expect-error
-    if (data?.error !== undefined) {
-      return null;
-    }
-    return data as { result: [{ Id: string }] };
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-async function getVisitorDetails(token: string) {
+export async function getVisitorDetails(token: string): Promise<{
+  clientProfile: any;
+  visitor: any;
+} | null> {
   try {
     const res = await fetch(BASE_URL + "/api/visitor?token=" + token);
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch visitor details");
+    }
     const data = (await res.json()) as
-      | { error: any }
-      | { visitor: any; clientProfile: any };
-    // @ts-expect-error
-    if (data?.error !== undefined) {
+      | { clientProfile: any; visitor: any }
+      | { error: any };
+
+    if ("error" in data) {
       return null;
     }
-    return data as { clientProfile: any; visitor: any };
+
+    return data as {
+      clientProfile: any;
+      visitor: any;
+    };
   } catch (error) {
     console.error(error);
     return null;
@@ -47,12 +40,11 @@ async function getVisitorDetails(token: string) {
 }
 
 async function Landing({
-  searchParams: { token, v },
+  searchParams: { token },
 }: {
-  searchParams: { token: string; v: string };
+  searchParams: { token: string };
 }) {
   const data = await getVisitorDetails(token);
-  console.log("data", data);
 
   if (data === null) {
     // notFound();
@@ -77,7 +69,7 @@ async function Landing({
               <ResizableHandle withHandle />
               <ResizablePanel defaultSize={75} className="h-full">
                 <ChatSection
-                welcomeMessage = "Hi, I'm your virtual assistant. How can I help you?"
+                  welcomeMessage={data?.visitor?.welcomeMessage}
                   visitorThreadId={data?.visitor?.threadId}
                   assistantId={data?.visitor?.assistantId}
                   className="flex flex-col overflow-y-auto"
@@ -94,7 +86,7 @@ async function Landing({
         <ImageGalleryMobile images={[]} />
 
         <ChatSection
-           welcomeMessage ="Hi, I'm your virtual assistant. How can I help you?"
+          welcomeMessage={data?.visitor?.welcomeMessage}
           visitorThreadId={data?.visitor?.threadId}
           assistantId={data?.visitor?.assistantId}
           className="flex flex-col overflow-y-auto"

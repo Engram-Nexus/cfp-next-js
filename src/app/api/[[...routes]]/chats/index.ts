@@ -14,7 +14,7 @@ chats.get("/history", async (c) => {
         apiKey: ENV.OPENAI_API_KEY,
       });
       if (!threadId) {
-        return c.json({ error: "No threadId provided" });
+        return c.json({ error: "No threadId provided" }, 403);
       }
       const messages = await openAI.beta.threads.messages.list(threadId, {
         order: "asc",
@@ -23,7 +23,7 @@ chats.get("/history", async (c) => {
       return c.json({ messages });
     } catch (error) {
       console.error(error);
-      return c.json({ error: error });
+      return c.json({ error: error }, 500);
     }
   });
 

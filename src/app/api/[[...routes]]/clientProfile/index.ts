@@ -14,11 +14,11 @@ clientProfileApi.get("/", async (c) => {
   
       const { token } = c.req.query();
       if (!token) {
-        return c.json({ error: "No token provided" });
+        return c.json({ error: "No token provided" }, 400);
       }
       const decrypted = await decrypt(token);
       if (decrypted === null) {
-        return c.json({ error: "Invalid token" });
+        return c.json({ error: "Invalid token" }, 400);
       }
       const id = decrypted.id;
   
@@ -31,7 +31,7 @@ clientProfileApi.get("/", async (c) => {
       return c.json({ result: result[0], id });
     } catch (error) {
       console.error(error);
-      return c.json({ error: error });
+      return c.json({ error: error }, 500);
     }
   });
   clientProfileApi.post("/", async (c) => {
@@ -66,7 +66,7 @@ clientProfileApi.get("/", async (c) => {
         return c.json({
           error: JSON.stringify(error),
           message: "failed to validate",
-        });
+        }, 403);
       }
   
       const ENV = getRequestContext().env;
@@ -89,7 +89,7 @@ clientProfileApi.get("/", async (c) => {
       return c.json({
         error: JSON.stringify(error),
         message: "failed to register",
-      });
+      }, 500);
     }
   });
   

@@ -41,7 +41,7 @@ export default function ChatSection({
         setChatHistory(result?.messages?.data);
       });
     return messages;
-  }, []);
+  }, [visitorThreadId]);
 
   useEffect(() => {
     getChatsHistory();
@@ -69,8 +69,7 @@ export default function ChatSection({
         handleInputChange={handleInputChange}
         isLoading={status === "in_progress"}
         threadId={visitorThreadId}
-        // assistantId={assistantId}
-        assistantId={"asst_TpskPBGaygbj3IoH2HPF6yCl"}
+        assistantId={assistantId}
       />
     </div>
   );
