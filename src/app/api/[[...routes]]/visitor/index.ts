@@ -30,6 +30,7 @@ visitorApi.post("/", async (c) => {
       colors,
       assistantId,
       welcomeMessage,
+      profileImage
     } = await c.req.json<{
       email: string;
       messages: string[];
@@ -39,6 +40,7 @@ visitorApi.post("/", async (c) => {
       colors: string[];
       assistantId: string;
       welcomeMessage: string;
+      profileImage: string;
     }>();
 
     const Id = generateUUID();
@@ -55,6 +57,7 @@ visitorApi.post("/", async (c) => {
       assistantId,
       threadId: threadId,
       welcomeMessage,
+      profileImage,
       dateCreated: Math.floor(Date.now() / 1000),
     };
 
@@ -75,7 +78,7 @@ visitorApi.post("/", async (c) => {
     const db = drizzle(ENV.DB);
     // const db = drizzle(c.env.DB);
     await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT, assistantId TEXT, threadId TEXT, welcomeMessage TEXT)"
+      "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT, assistantId TEXT, threadId TEXT, welcomeMessage TEXT, profileImage TEXT)"
     ).run();
 
     const result = await db.insert(visitor).values(payload).returning();

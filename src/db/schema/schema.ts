@@ -26,6 +26,7 @@ export const visitor = sqliteTable("visitors", {
   assistantId: text("assistantId", { length: 256 }).notNull(),
   threadId: text("threadId", { length: 256 }).notNull(),
   welcomeMessage: text("welcomeMessage", { length: 256 }).notNull(),
+  profileImage: text("profileImage", { length: 256 }),
 });
 
 export const campaigns = sqliteTable("campaigns", {

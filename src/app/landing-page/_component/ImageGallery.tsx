@@ -37,22 +37,22 @@ function ImageComp({ src }: { src: string }) {
   return (
     <div className="rounded-lg m-4">
       <div className="lg:scale-100 scale-75 h-full w-full">
-        <object
+        {/* <object
           data={src}
           type="image/png"
           width={0}
           height={0}
           className="h-full w-full rounded-lg object-cover"
-        >
+        > */}
           <img
-            src="/default.png"
+            src={src}
             width={0}
             height={0}
             sizes="100vw"
             className="h-full w-full rounded-lg object-cover"
             alt="image"
           />
-        </object>
+        {/* </object> */}
       </div>
     </div>
   );
