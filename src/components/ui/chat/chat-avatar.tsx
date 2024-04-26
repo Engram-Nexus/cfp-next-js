@@ -10,7 +10,7 @@ export default function ChatAvatar({ role }: { role: string }) {
         {/* <User2 className="h-4 w-4" /> */}
         {visitorData?.profileImage ? (
           <img
-            className="rounded-md"
+            className="rounded-md h-full w-full"
             src={visitorData?.profileImage}
             alt="visitor Image"
             width={24}
@@ -25,7 +25,7 @@ export default function ChatAvatar({ role }: { role: string }) {
   return (
     <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border bg-black text-white shadow">
       <img
-        className="rounded-md"
+        className="rounded-md h-full w-full"
         src={
           visitorData?.companyLogo ? visitorData?.companyLogo : "/engram.png"
         }
