@@ -44,7 +44,7 @@ export default function ChatSection({
   }, [getChatsHistory]);
 
   return (
-    <div className={cn("space-y-4 max-w-5xl w-full h-full", className)}>
+    <div className={cn("space-y-4 w-full h-full", className)}>
       <ChatMessages
         welcomeMessage={welcomeMessage}
         messages={messages}

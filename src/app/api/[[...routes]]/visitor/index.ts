@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import OpenAI from "openai";
+import { ZodError } from "zod";
 
 const visitorApi = new Hono();
 
@@ -29,7 +30,7 @@ visitorApi.post("/", async (c) => {
       colors,
       assistantId,
       welcomeMessage,
-    } = (await c.req.json()) as {
+    } = await c.req.json<{
       email: string;
       messages: string[];
       imageUrls: string[];
@@ -38,7 +39,7 @@ visitorApi.post("/", async (c) => {
       colors: string[];
       assistantId: string;
       welcomeMessage: string;
-    };
+    }>();
 
     const Id = generateUUID();
     const threadId = (await openai.beta.threads.create({})).id;
@@ -60,8 +61,14 @@ visitorApi.post("/", async (c) => {
     try {
       insertVisitorSchema.parse(payload);
     } catch (error) {
-      console.error(error);
-      return c.json({ error: error, message: "failed to validate" }, 403);
+      if (error instanceof ZodError) {
+        let errors: string[] = [];
+        error.issues.forEach((issue) => {
+          errors.push(issue.message);
+        });
+        console.error(errors);
+        return c.json({ error: errors, message: "failed to validate" }, 403);
+      }
     }
 
     const ENV = getRequestContext().env;
@@ -76,10 +83,10 @@ visitorApi.post("/", async (c) => {
     const token = await encrypt({ id: insertedId, clientProfileId });
     const url = BASE_URL + "/landing-page?token=" + token;
     return c.json({ url });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     return c.json(
-      { error: error, message: "failed to register new visitor" },
+      { error: error?.message, message: "failed to register new visitor" },
       500
     );
   }

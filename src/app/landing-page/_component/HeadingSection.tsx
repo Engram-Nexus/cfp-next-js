@@ -1,6 +1,9 @@
+"use client";
 import { cn } from "@/lib/utils";
+import { useVisitorStore } from "@/store/useVisitorStore";
 
 function HeadingSection({ clientProfile }: { clientProfile: any }) {
+  const visitorData = useVisitorStore((state) => state.visitorData);
   return (
     <section
       className={cn(
@@ -16,8 +19,16 @@ function HeadingSection({ clientProfile }: { clientProfile: any }) {
           {clientProfile?.description ||
             " Our work is driven by emotion and built on logic."}
         </p>
+        {visitorData?.messages && (
+          <div className=" flex gap-4 flex-wrap bg-[#f5f5f5] shadow-sm p-4 my-2 rounded-lg">
+            {visitorData?.messages?.map((message: any) => (
+              <p className="text-sm" key={message}>
+                {message}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
-      <p></p>
     </section>
   );
 }

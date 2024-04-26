@@ -8,6 +8,7 @@ import { BASE_URL } from "@/constants";
 import HeadingSection from "./_component/HeadingSection";
 import ImageGallery from "./_component/ImageGallery";
 import ImageGalleryMobile from "./_component/ImageGalleryMobile";
+import ZustandStore from "@/store/ZustandStore";
 
 export const runtime = "edge";
 
@@ -44,6 +45,7 @@ async function Landing({
 }: {
   searchParams: { token: string };
 }) {
+
   const data = await getVisitorDetails(token);
 
   if (data === null) {
@@ -52,6 +54,7 @@ async function Landing({
 
   return (
     <div className="h-screen w-screen">
+      <ZustandStore data={data?.visitor} />
       <div className="hidden lg:block h-[100dvh]">
         <ResizablePanelGroup
           direction="horizontal"
@@ -63,11 +66,11 @@ async function Landing({
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={50}>
             <ResizablePanelGroup direction="vertical">
-              <ResizablePanel defaultSize={25}>
+              <ResizablePanel defaultSize={35}>
                 <HeadingSection clientProfile={data?.clientProfile} />
               </ResizablePanel>
               <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={75} className="h-full">
+              <ResizablePanel defaultSize={65} className="h-full">
                 <ChatSection
                   welcomeMessage={data?.visitor?.welcomeMessage}
                   visitorThreadId={data?.visitor?.threadId}

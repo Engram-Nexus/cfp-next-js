@@ -47,6 +47,7 @@ const formSchema = z.object({
     .max(36, { message: "Invalid clientProfileId" }),
   colors: z.array(z.string().min(1, { message: "Colors are required" })),
   welcomeMessage: z.string().min(2, { message: "Welcome message is required" }),
+  profileImage : z.string().min(2, { message: "Profile image is required" }),
 });
 
 function VisistorRegister() {
@@ -65,6 +66,8 @@ function VisistorRegister() {
       colors: undefined,
       assistantId: "",
       welcomeMessage: "",
+      profileImage : "",
+
     },
   });
 
@@ -81,6 +84,7 @@ function VisistorRegister() {
       colors: values.colors,
       assistantId: values.assistantId,
       welcomeMessage: values.welcomeMessage,
+      profileImage : values.profileImage,
     };
     fetch("/api/visitor", {
       method: "POST",
@@ -89,13 +93,15 @@ function VisistorRegister() {
       },
       body: JSON.stringify(payload),
     })
-      .then((res) => res.json() as Promise<{ url: string }>)
+      .then((res) =>  res.json() as Promise<{ url: string }>) 
       .then((data) => {
+   
         console.log(data);
         if (data.url === undefined) return;
         setVisitorUrl(data.url);
         setIsDialogOpen(true);
         setIsloading(false);
+     
       })
       .catch((error) => {
         console.error(error);
@@ -124,7 +130,6 @@ function VisistorRegister() {
     },
     [form]
   );
-  // console.log(visitorUrl , "rth")
   return (
     <div className="flex items-center justify-center">
       <Card className={cn("max-w-xl m-6 h-full ")}>
@@ -201,6 +206,19 @@ function VisistorRegister() {
                       <FormLabel>Welcome Message</FormLabel>
                       <FormControl>
                         <Input placeholder="welcome message...." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                  <FormField
+                  control={form.control}
+                  name="profileImage"
+                  render={({ field }) => (
+                    <FormItem className="col-span-4 mx-1">
+                      <FormLabel>Profile Image</FormLabel>
+                      <FormControl>
+                        <Input  placeholder="Profile Image...." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
