@@ -10,7 +10,6 @@ const leadsApi = new Hono();
 leadsApi.post("/", async (c) => {
   try {
     const {
-      dateCreated,
       firstName,
       lastName,
       email,
@@ -18,7 +17,6 @@ leadsApi.post("/", async (c) => {
       campaignId,
       linkedinRawProfileId,
     } = await c.req.json<{
-      dateCreated: number;
       firstName: string;
       lastName: string;
       email: string;
@@ -29,7 +27,7 @@ leadsApi.post("/", async (c) => {
 
     const payload = {
       Id: generateUUID(),
-      dateCreated,
+      dateCreated : Math.floor(Date.now()/1000),
       firstName,
       lastName,
       email,
@@ -69,7 +67,6 @@ leadsApi.post("/bulk", async (c) => {
   try {
     const body = await c.req.json<
       {
-        dateCreated: number;
         firstName: string;
         lastName: string;
         email: string;
@@ -82,6 +79,7 @@ leadsApi.post("/bulk", async (c) => {
     const payload = body.map((element) => ({
       ...element,
       Id: generateUUID(),
+      dateCreated : Math.floor(Date.now()/1000),
     }));
 
     try {
@@ -162,7 +160,6 @@ leadsApi.put("/update", async (c) => {
   try {
     const { leadid } = c.req.query();
     const {
-      dateCreated,
       firstName,
       lastName,
       email,
@@ -170,7 +167,6 @@ leadsApi.put("/update", async (c) => {
       campaignId,
       linkedinRawProfileId
     } = await c.req.json<{
-      dateCreated: number;
       firstName: string;
       lastName: string;
       email: string;
@@ -182,7 +178,7 @@ leadsApi.put("/update", async (c) => {
       return c.json({ error: "No leadid provided" }, 400);
     }
     const payload = {
-      dateCreated,
+      dateCreated: Math.floor(Date.now()/1000),
       firstName,
       lastName,
       email,
@@ -200,7 +196,6 @@ leadsApi.put("/update", async (c) => {
     const db = drizzle(ENV.DB);
 
    const result = await db.update(leads).set({
-    dateCreated: dateCreated,
     firstName: firstName,
     lastName: lastName,
     email: email,
