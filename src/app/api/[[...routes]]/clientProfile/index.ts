@@ -11,7 +11,7 @@ const clientProfileApi = new Hono();
 clientProfileApi.get("/", async (c) => {
   try {
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
+    const db = drizzle(ENV.DB1);
 
     const { token } = c.req.query();
     if (!token) {
@@ -92,9 +92,9 @@ clientProfileApi.post("/", async (c) => {
     }
 
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
+    const db = drizzle(ENV.DB1);
 
-    // await ENV.DB.prepare(
+    // await ENV.DB1.prepare(
     //   "CREATE TABLE IF NOT EXISTS client-profiles (id TEXT PRIMARY KEY, dateCreated INTEGER, companyName TEXT, description TEXT, linkedinUrl TEXT, logo TEXT, tagline TEXT, website TEXT logoR2 TEXT)"
     // ).run();
 

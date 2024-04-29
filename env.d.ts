@@ -3,6 +3,7 @@
 
 interface CloudflareEnv {
     NEXT_PUBLIC_BASE_URL: string;
-    DB: D1Database
+    DB1: D1Database
+    DB2: D1Database
     OPENAI_API_KEY: string;
 }

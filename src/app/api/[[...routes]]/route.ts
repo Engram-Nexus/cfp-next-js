@@ -10,7 +10,7 @@ import visitorApi from "./visitor";
 export const runtime = "edge";
 
 const app = new Hono<{
-  Bindings: { NEXT_PUBLIC_BASE_URL: string; DB: D1Database };
+  Bindings: { NEXT_PUBLIC_BASE_URL: string; DB1: D1Database, DB2: D1Database };
 }>().basePath("/api");
 
 app.route("/visitor", visitorApi);

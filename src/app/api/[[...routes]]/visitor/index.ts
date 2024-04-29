@@ -75,9 +75,9 @@ visitorApi.post("/", async (c) => {
     }
 
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
+    const db = drizzle(ENV.DB1);
     // const db = drizzle(c.env.DB);
-    await ENV.DB.prepare(
+    await ENV.DB1.prepare(
       "CREATE TABLE IF NOT EXISTS visitors (id TEXT PRIMARY KEY, dateCreated INTEGER, email TEXT, messages JSON, imageUrls JSON, firstName TEXT, clientProfileId TEXT, colors TEXT, assistantId TEXT, threadId TEXT, welcomeMessage TEXT, profileImage TEXT)"
     ).run();
 
@@ -107,8 +107,8 @@ visitorApi.get("/", async (c) => {
     const id = decrypted.id;
     const clientProfileId = decrypted.clientProfileId;
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-    // const db = drizzle(c.env.DB);
+    const db = drizzle(ENV.DB1);
+    // const db = drizzle(c.env.DB1);
 
     const result = await db
       .select()

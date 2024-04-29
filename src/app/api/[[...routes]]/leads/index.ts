@@ -1,4 +1,4 @@
-import { insertLeadsSchema, leads } from "@/db/schema/schema";
+import { insertLeadsSchema, leads, visitor } from "@/db/schema/schema";
 import { generateUUID } from "@/lib/utils";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 import { eq } from "drizzle-orm";
@@ -27,7 +27,7 @@ leadsApi.post("/", async (c) => {
 
     const payload = {
       Id: generateUUID(),
-      dateCreated : Math.floor(Date.now()/1000),
+      dateCreated: Math.floor(Date.now() / 1000),
       firstName,
       lastName,
       email,
@@ -48,8 +48,8 @@ leadsApi.post("/", async (c) => {
       }
     }
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-    await ENV.DB.prepare(
+    const db = drizzle(ENV.DB2);
+    await ENV.DB2.prepare(
       "CREATE TABLE IF NOT EXISTS leads (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, linkedinUrl TEXT, campaignId TEXT, linkedinRawProfileId TEXT, dateCreated INTEGER)"
     ).run();
     const inserted = await db.insert(leads).values(payload).returning();
@@ -79,7 +79,7 @@ leadsApi.post("/bulk", async (c) => {
     const payload = body.map((element) => ({
       ...element,
       Id: generateUUID(),
-      dateCreated : Math.floor(Date.now()/1000),
+      dateCreated: Math.floor(Date.now() / 1000),
     }));
 
     try {
@@ -97,8 +97,8 @@ leadsApi.post("/bulk", async (c) => {
       }
     }
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
-    await ENV.DB.prepare(
+    const db = drizzle(ENV.DB2);
+    await ENV.DB2.prepare(
       "CREATE TABLE IF NOT EXISTS leads (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, linkedinUrl TEXT, campaignId TEXT, linkedinRawProfileId TEXT, dateCreated INTEGER)"
     ).run();
     const inserted = await db.insert(leads).values(payload).returning();
@@ -114,7 +114,7 @@ leadsApi.post("/bulk", async (c) => {
 leadsApi.get("/", async (c) => {
   try {
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
+    const db = drizzle(ENV.DB2);
     const { leadid } = c.req.query();
     if (!leadid) {
       return c.json({ error: "No leadid provided" }, 400);
@@ -131,7 +131,7 @@ leadsApi.post("/lead-by-column-value", async (c) => {
   try {
     const columnValue = await c.req.json<{ [key: string]: any }>();
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
+    const db = drizzle(ENV.DB2);
 
     if (!Object.keys(columnValue)) {
       return c.json({ error: "Column name or value not provided" }, 400);
@@ -142,7 +142,7 @@ leadsApi.post("/lead-by-column-value", async (c) => {
     const leadsKeys = Object.keys(leads) as LeadsKeys[];
 
     if (!leadsKeys.includes(columnName)) {
-    return c.json({ error: "Column name not found" }, 400);
+      return c.json({ error: "Column name not found" }, 400);
     }
 
     const result = await db
@@ -150,6 +150,15 @@ leadsApi.post("/lead-by-column-value", async (c) => {
       .from(leads)
       // @ts-ignore
       .where(eq(leads[columnName], columnValue[columnName]));
+    // get the email address from the result
+const email = result[0]?.email
+    // identify the visitor by email
+    // get the threadId from that visitor
+
+    const threadId = await db.select().from(visitor).where(eq(visitor.email, email));
+    
+
+    // get all the chat hhistory using threadId and send it in the response
     return c.json({ result: result });
   } catch (error: any) {
     return c.json({ error: error?.message }, 500);
@@ -165,7 +174,7 @@ leadsApi.put("/update", async (c) => {
       email,
       linkedinUrl,
       campaignId,
-      linkedinRawProfileId
+      linkedinRawProfileId,
     } = await c.req.json<{
       firstName: string;
       lastName: string;
@@ -178,36 +187,37 @@ leadsApi.put("/update", async (c) => {
       return c.json({ error: "No leadid provided" }, 400);
     }
     const payload = {
-      dateCreated: Math.floor(Date.now()/1000),
+      dateCreated: Math.floor(Date.now() / 1000),
       firstName,
       lastName,
       email,
       linkedinUrl,
       campaignId,
-      linkedinRawProfileId
-    } 
-    try{
-      insertLeadsSchema.partial().parse(payload)
-    }
-    catch(error){
-      return c.json({error: "Failed to validate data"}, 400)
+      linkedinRawProfileId,
+    };
+    try {
+      insertLeadsSchema.partial().parse(payload);
+    } catch (error) {
+      return c.json({ error: "Failed to validate data" }, 400);
     }
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB);
+    const db = drizzle(ENV.DB2);
 
-   const result = await db.update(leads).set({
-    firstName: firstName,
-    lastName: lastName,
-    email: email,
-    linkedinUrl: linkedinUrl,
-    campaignId: campaignId,
-}).where(eq(leads.Id, leadid)).returning();
-return c.json({ message: "success", data: result });
-
+    const result = await db
+      .update(leads)
+      .set({
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        linkedinUrl: linkedinUrl,
+        campaignId: campaignId,
+      })
+      .where(eq(leads.Id, leadid))
+      .returning();
+    return c.json({ message: "success", data: result });
   } catch (error: any) {
     return c.json({ error: error?.message }, 500);
-    
   }
-})
+});
 
 export default leadsApi;
