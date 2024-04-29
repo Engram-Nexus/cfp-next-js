@@ -20,9 +20,9 @@ function HeadingSection({ clientProfile }: { clientProfile: any }) {
             " Our work is driven by emotion and built on logic."}
         </p>
         {visitorData?.messages && (
-          <div className=" flex gap-4 flex-wrap bg-[#f5f5f5] shadow-sm p-4 my-2 rounded-lg">
+          <div className=" flex gap-4 flex-wrap bg-[#f7f4f4d1] shadow-sm rounded-lg p-4 my-2">
             {visitorData?.messages?.map((message: any) => (
-              <p className="text-sm" key={message}>
+              <p className="text-sm bg-[#f5f5f5] shadow-sm rounded-lg p-2" key={message}>
                 {message}
               </p>
             ))}

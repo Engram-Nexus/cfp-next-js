@@ -50,7 +50,7 @@ leadsApi.post("/", async (c) => {
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
     await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS leads (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, linkedinUrl TEXT, description TEXT, linkedinUrl TEXT, campaignId TEXT, linkedinRawProfileId TEXT)"
+      "CREATE TABLE IF NOT EXISTS leads (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, linkedinUrl TEXT, campaignId TEXT, linkedinRawProfileId TEXT, dateCreated INTEGER)"
     ).run();
     const inserted = await db.insert(leads).values(payload).returning();
     return c.json({ message: "success", data: inserted });
@@ -99,7 +99,7 @@ leadsApi.post("/bulk", async (c) => {
     const ENV = getRequestContext().env;
     const db = drizzle(ENV.DB);
     await ENV.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS leads (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, linkedinUrl TEXT, description TEXT, campaignId TEXT, linkedinRawProfileId TEXT)"
+      "CREATE TABLE IF NOT EXISTS leads (id TEXT PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, linkedinUrl TEXT, campaignId TEXT, linkedinRawProfileId TEXT, dateCreated INTEGER)"
     ).run();
     const inserted = await db.insert(leads).values(payload).returning();
     return c.json({ message: "success", data: inserted });
