@@ -4,9 +4,11 @@ import { getRequestContext } from "@cloudflare/next-on-pages";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import OpenAI from "openai";
 import { ZodError } from "zod";
 
 const leadsApi = new Hono();
+
 leadsApi.post("/", async (c) => {
   try {
     const {
@@ -130,8 +132,10 @@ leadsApi.get("/", async (c) => {
 leadsApi.post("/lead-by-column-value", async (c) => {
   try {
     const columnValue = await c.req.json<{ [key: string]: any }>();
+    
     const ENV = getRequestContext().env;
-    const db = drizzle(ENV.DB2);
+    const db1 = drizzle(ENV.DB1);
+    const db2 = drizzle(ENV.DB2);
 
     if (!Object.keys(columnValue)) {
       return c.json({ error: "Column name or value not provided" }, 400);
@@ -145,21 +149,38 @@ leadsApi.post("/lead-by-column-value", async (c) => {
       return c.json({ error: "Column name not found" }, 400);
     }
 
-    const result = await db
+    const result = await db2
       .select()
       .from(leads)
       // @ts-ignore
       .where(eq(leads[columnName], columnValue[columnName]));
     // get the email address from the result
-const email = result[0]?.email
+        const email = result[0]?.email
     // identify the visitor by email
     // get the threadId from that visitor
 
-    const threadId = await db.select().from(visitor).where(eq(visitor.email, email));
-    
+    const visitorResult = await db1.select().from(visitor).where(eq(visitor.email, email));
+    let visitorError= undefined
+    let chatHistory = undefined
+    if(visitorResult){
+      const threadId = visitorResult[0]?.threadId
+      const openAI = new OpenAI({
+        apiKey: ENV.OPENAI_API_KEY,
+      });
+      try{
+        chatHistory = await openAI.beta.threads.messages.list(threadId, {
+          order: "asc",
+        });
+      }catch(err:any){
+        visitorError = err?.message
+      }
 
+    }else{
+      visitorError = "Visitor not found"
+    }
+    
     // get all the chat hhistory using threadId and send it in the response
-    return c.json({ result: result });
+    return c.json({ result: result, chatHistory: chatHistory?.data, ...(visitorError && { error: visitorError }) });
   } catch (error: any) {
     return c.json({ error: error?.message }, 500);
   }

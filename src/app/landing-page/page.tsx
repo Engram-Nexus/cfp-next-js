@@ -54,7 +54,7 @@ async function Landing({
 
   return (
     <div className="h-screen w-screen">
-      <ZustandStore data={data?.visitor} />
+      <ZustandStore visitorData={data?.visitor} clientData={data?.clientProfile} />
       <div className="hidden lg:block h-[100dvh]">
         <ResizablePanelGroup
           direction="horizontal"

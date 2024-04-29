@@ -1,9 +1,11 @@
 "use client";
+import { useClientStore } from "@/store/useClientStore";
 import { useVisitorStore } from "@/store/useVisitorStore";
 import { User2 } from "lucide-react";
 
 export default function ChatAvatar({ role }: { role: string }) {
   const visitorData = useVisitorStore((state) => state.visitorData);
+  const clientData = useClientStore((state) => state.clientData);
   if (role === "user") {
     return (
       <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border bg-background shadow">
@@ -27,7 +29,7 @@ export default function ChatAvatar({ role }: { role: string }) {
       <img
         className="rounded-md h-full w-full"
         src={
-          visitorData?.companyLogo ? visitorData?.companyLogo : "/engram.png"
+          clientData?.logo ? clientData?.logo : "/engram.png"
         }
         alt="engram Logo"
         width={24}

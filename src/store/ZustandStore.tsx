@@ -1,14 +1,26 @@
 "use client";
 
 import { useEffect } from "react";
+import { useClientStore } from "./useClientStore";
 import { useVisitorStore } from "./useVisitorStore";
 
-const ZustandStore = ({ data }: { data: any }) => {
+const ZustandStore = ({
+  visitorData,
+  clientData,
+}: {
+  visitorData: any;
+  clientData: any;
+}) => {
   const setVisitorData = useVisitorStore((state) => state.setVisitorData);
+  const setClientData = useClientStore((state) => state.setClientData);
 
   useEffect(() => {
-    setVisitorData(data);
-  }, [data, setVisitorData]);
+    setVisitorData(visitorData);
+  }, [visitorData]);
+
+  useEffect(() => {
+    setClientData(clientData);
+  }, [clientData]);
 
   return <></>;
 };
