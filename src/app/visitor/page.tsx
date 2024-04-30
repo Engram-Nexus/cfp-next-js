@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Check, Copy, LoaderCircle } from "lucide-react";
 import { useCallback, useState } from "react";
+import ChatWidget from "@/components/ChatWidget";
 
 const formSchema = z.object({
   email: z
@@ -131,6 +132,10 @@ function VisistorRegister() {
     [form]
   );
   return (
+    <>
+    
+    <ChatWidget/>
+
     <div className="flex items-center justify-center">
       <Card className={cn("max-w-xl m-6 h-full ")}>
         <CardHeader>
@@ -333,6 +338,7 @@ function VisistorRegister() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
 export default VisistorRegister;
