@@ -18,6 +18,7 @@ app.route("/chat", chats);
 app.route("/client-profile", clientProfileApi);
 app.route("/assistant", assistantApi);
 app.route("/leads", leadsApi);
+app.route("/slidesController")
 
 app.get("/hello", (c) => {
   const ENV = getRequestContext().env;
