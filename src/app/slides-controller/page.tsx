@@ -6,6 +6,9 @@ import { experimental_useAssistant as useAssistant } from "ai/react";
 import { ChatInput, ChatMessages } from "@/components/ui/chat";
 import { Button } from "@/components/ui/button";
 import { decrypt } from "@/lib/jwt";
+
+export const runtime = 'edge';
+
 const GoogleSlidesChat = ({searchParams:{token}}:{searchParams:{token:string}}) => {
   const [open, setOpen] = useState(true);
   const chatSectionRef = useRef<HTMLDivElement>(null);
