@@ -9,7 +9,7 @@ import visitorApi from "./visitor";
 import slidesControllerApi from "./slidesController";
 import fileUploadApi from "./fileUpload";
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 const app = new Hono<{
   Bindings: { NEXT_PUBLIC_BASE_URL: string; DB1: D1Database, DB2: D1Database };
