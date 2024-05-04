@@ -28,6 +28,7 @@
     "drizzle-kit": "^0.20.14",
     "drizzle-orm": "^0.30.8",
     "drizzle-zod": "^0.5.1",
+    "google-auth-library": "^9.9.0",
     "hono": "^4.2.4",
     "jose": "^5.2.4",
     "lucide-react": "^0.365.0",

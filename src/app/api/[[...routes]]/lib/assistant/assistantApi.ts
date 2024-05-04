@@ -32,9 +32,7 @@ export async function runAssistant(input: {
     content: input.message,
   });
  
-  return AssistantResponse(
-    { threadId, messageId: createdMessage.id },
-    async ({ forwardStream, sendDataMessage }) => {
+  return AssistantResponse({ threadId, messageId: createdMessage.id }, async ({ forwardStream, sendDataMessage }) => {
       // Run the assistant on the thread
       const runStream = openai.beta.threads.runs.stream(threadId, {
         assistant_id:
