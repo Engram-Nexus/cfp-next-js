@@ -6,6 +6,8 @@ import chats from "./chats";
 import clientProfileApi from "./clientProfile";
 import leadsApi from "./leads";
 import visitorApi from "./visitor";
+import slidesControllerApi from "./slidesController";
+import fileUploadApi from "./fileUpload";
 
 export const runtime = "edge";
 
@@ -18,7 +20,8 @@ app.route("/chat", chats);
 app.route("/client-profile", clientProfileApi);
 app.route("/assistant", assistantApi);
 app.route("/leads", leadsApi);
-app.route("/slidesController")
+app.route("/slides", slidesControllerApi)
+app.route("/upload", fileUploadApi)
 
 app.get("/hello", (c) => {
   const ENV = getRequestContext().env;

@@ -11,6 +11,7 @@ export default function ChatMessages(
     flex1?: boolean;
     chatHistory?: any;
     welcomeMessage: string;
+    from?: "slides" | undefined;
   }
 ) {
   const scrollableChatContainerRef = useRef<HTMLDivElement>(null);
@@ -48,7 +49,12 @@ export default function ChatMessages(
       })}
     >
       <div
-        className="flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4"
+        className={cn(
+          "flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4",
+          {
+            "h-[75vh]": props.from === "slides",
+          }
+        )}
         ref={scrollableChatContainerRef}
       >
         {props?.welcomeMessage ? (
