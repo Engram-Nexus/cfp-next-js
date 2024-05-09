@@ -1,18 +1,27 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { SquareChevronLeft, SquareChevronRight } from "lucide-react";
+import {
+  LoaderCircle,
+  SquareChevronLeft,
+  SquareChevronRight,
+} from "lucide-react";
 import { experimental_useAssistant as useAssistant } from "ai/react";
 import { ChatInput, ChatMessages } from "@/components/ui/chat";
 import { Button } from "@/components/ui/button";
 import { decrypt } from "@/lib/jwt";
+import Slides from "@/components/Slides";
 
-export const runtime = 'edge';
+export const runtime = "edge";
 
-const GoogleSlidesChat = ({searchParams:{token}}:{searchParams:{token:string}}) => {
+const GoogleSlidesChat = ({
+  searchParams: { token },
+}: {
+  searchParams: { token: string };
+}) => {
   const [open, setOpen] = useState(true);
   const chatSectionRef = useRef<HTMLDivElement>(null);
-const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<any>(null);
   const {
     messages,
     input,
@@ -27,50 +36,60 @@ const [data, setData] = useState<any>(null)
   const toggleChatBox = () => {
     setOpen(!open);
   };
-  // const getSlides = ()=>{
-  // }a
 
-const  decode =async()=>{
-  const url = token
-  const decodedData = await decrypt(url);;
-return decodedData
-}
- 
-useEffect(() => {
-  decode().then((decodedData)=>{
-setData(decodedData)
-  })
-},[])
+  
+    const decode = async () => {
+    const url = token;
+    const decodedData = await decrypt(url);
+    return decodedData;
+  };
 
+  useEffect(() => {
+    decode().then((decodedData) => {
+      setData(decodedData);
+    });
+  }, []);
 
   return (
     <div className="md:flex h-[100vh] w-full">
-      <div
-        className={cn(
-          "h-full relative ease-in-out duration-700",
-          open === true ? "md:w-3/4" : "w-full"
-        )}
-      >
-        <iframe
-          id="googleSlideIframe"
-          className="w-full h-full"
-          // src="https://docs.google.com/presentation/d/e/2PACX-1vSOwXWZZMSVJ3Lk03_mz7pFlpMDuf1FRBxPAbUsvS_hVvzmlk-uz2vI78avvBairfM2vdBLbrEnr5yX/embed?start=false&loop=false&delayms=3000"
-          src={data?.slideUrl+"/embed?start=false&loop=false&delayms=3000" }
-    
-          allowFullScreen={true}
-        ></iframe>
-        <button
-          className="absolute top-2 right-2 text-xl"
-          onClick={toggleChatBox}
-        >
-          {" "}
-          {open ? (
-            <SquareChevronRight className="text-white bg-black" size={30} />
-          ) : (
-            <SquareChevronLeft className="text-white bg-black" size={30} />
+      {!token ? (
+        <div className="w-full">
+          <Slides />
+        </div>
+      ) : (
+        <div
+          className={cn(
+            "h-full relative ease-in-out duration-700",
+            open === true ? "md:w-3/4" : "w-full"
           )}
-        </button>
-      </div>
+        >
+          {!data?.slideUrl ? (
+            <LoaderCircle className="mx-auto flex h-screen justify-center  animate-spin" />
+          ) : (
+            <iframe
+              id="googleSlideIframe"
+              className="w-full h-full"
+              // src="https://docs.google.com/presentation/d/e/2PACX-1vSOwXWZZMSVJ3Lk03_mz7pFlpMDuf1FRBxPAbUsvS_hVvzmlk-uz2vI78avvBairfM2vdBLbrEnr5yX/embed?start=false&loop=false&delayms=3000"
+              src={
+                data?.slideUrl + "/embed?start=false&loop=false&delayms=3000"
+              }
+              allowFullScreen={true}
+            ></iframe>
+          )}
+          <button
+            className="absolute top-2 right-2 text-xl"
+            onClick={toggleChatBox}
+          >
+            {" "}
+            {open ? (
+              <SquareChevronRight className="text-white bg-black" size={30} />
+            ) : (
+              <SquareChevronLeft className="text-white bg-black" size={30} />
+            )}
+          </button>
+        </div>
+      )}
+
       <div
         ref={chatSectionRef}
         className={cn(

@@ -27,8 +27,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Check, Copy, LoaderCircle } from "lucide-react";
+import { Check, Copy, LoaderCircle, X } from "lucide-react";
 import { useCallback, useState } from "react";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 const formSchema = z.object({
   email: z
@@ -288,8 +289,11 @@ function VisistorRegister() {
                     onOpenChange={() => setIsDialogOpen(false)}
                   >
                     <DialogContent>
-                      <DialogHeader>
+                      <DialogHeader className="flex flex-row justify-between items-center">
                         <DialogTitle>Visitor created successfully</DialogTitle>
+                        <DialogClose  >
+                        <X className= "h-4 w-4" />
+                        </DialogClose>
                       </DialogHeader>
                       <DialogDescription className="flex justify-start">
                         {
