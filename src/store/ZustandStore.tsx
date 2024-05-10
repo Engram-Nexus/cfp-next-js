@@ -16,11 +16,11 @@ const ZustandStore = ({
 
   useEffect(() => {
     setVisitorData(visitorData);
-  }, [visitorData]);
+  }, [setVisitorData, visitorData]);
 
   useEffect(() => {
     setClientData(clientData);
-  }, [clientData]);
+  }, [clientData, setClientData]);
 
   return <></>;
 };

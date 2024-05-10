@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+import toast from "react-hot-toast";
 
 const formSchema = z.object({
   companyName: z.string().min(1, { message: "Company Name is required" }),
@@ -29,7 +29,6 @@ const formSchema = z.object({
 });
 
 function RegisterPage() {
-  const {toast} = useToast()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,9 +54,7 @@ function RegisterPage() {
       .then((res) => res.json())
       .then((data) => {
         console.log(data)
-      toast({
-        title:"Registered succefully."
-      })
+      toast.success("Registered succefully.")
       })
       .catch((error) => console.error(error));
   }

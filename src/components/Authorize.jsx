@@ -1,23 +1,16 @@
 "use client";
-import Script from "next/script";
-import { useEffect, useState } from "react";
-import {
-  DialogDescription,
-  DialogHeader,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-} from "./ui/dialog";
-import { Button } from "./ui/button";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "./ui/use-toast";
-import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import toast from "react-hot-toast";
 
-const Slides = () => {
+const Authorize = () => {
   const [isloading, setIsloading] = useState(false);
-  const [open, setOpen] = useState(false);
+  
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -31,7 +24,6 @@ const Slides = () => {
     "https://slides.googleapis.com/$discovery/rest?version=v1";
   const SCOPES = "https://www.googleapis.com/auth/presentations.readonly";
 
-  const router = useRouter();
 
   function gapiLoaded() {
     gapi.load("client", initializeGapiClient);
@@ -52,7 +44,7 @@ const Slides = () => {
   };
 
   const onSubmit = (data) => {
-    handleAuthClick(data.slideUrl);
+    handleAuthClick(data?.slideUrl);
   };
 
   const handleAuthClick = async (slideUrl) => {
@@ -62,12 +54,7 @@ const Slides = () => {
       scope: SCOPES,
       callback: async (resp) => {
         if (resp.error !== undefined) {
-          toast({
-            title: "Error",
-            description: resp.error || "Authorization failed. Try again",
-            variant: "destructive",
-            className: "bg-red-500",
-          });
+          toast.error(resp.error||"Authorization failed. Try again");
           setIsloading(false);
           throw resp;
         }
@@ -77,12 +64,7 @@ const Slides = () => {
         console.log(error);
         if (error) {
           console.log("popup closed");
-          toast({
-            title: "Error",
-            description: error.message || "Authorization failed. Try again",
-            variant: "destructive",
-            className: "bg-red-500",
-          });
+          toast.error(error.message||"Authorization failed. Try again");
         }
         setIsloading(false);
       },
@@ -115,50 +97,23 @@ const Slides = () => {
           setIsloading(false);
         } else {
           setIsloading(false);
-          toast({
-            title: "Error",
-            description:
-              res?.error?.error?.message ||
-              "Something went wrong pleae try again",
-            variant: "destructive",
-            className: "bg-red-500",
-          });
+          toast.error(res?.error?.error?.message || "Something went wrong. please try again");
         }
       } catch (error) {
         setIsloading(false);
-        toast({
-          title: "Error",
-          description: "Something went wrong pleae try again",
-          variant: "default",
-          className: "bg-red-500",
-        });
-
+        toast.error("something went wrong. please try again");
         console.log(error, "error while creating assistant");
       } finally {
         setIsloading(false);
       }
     } catch (error) {
       setIsloading(false);
-      toast({
-        title: "Error",
-        description: error?.result?.error?.message || "Something went wrong",
-        variant: "destructive",
-        className: "bg-red-500",
-      });
+      toast.error(error?.result?.error?.message || "Something went wrong. please try again");
       console.log(error);
     } finally {
       setIsloading(false);
     }
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setOpen(true);
-    }, 0);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
 
   return (
     <>
@@ -180,7 +135,7 @@ const Slides = () => {
             <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">
               Google Slides Q&A
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-gray-500 font-medium dark:text-gray-400">
               Enter a Google Slides URL to start a chat-based Q&A session.
             </p>
           </div>
@@ -209,7 +164,7 @@ const Slides = () => {
             ) : (
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full font-semibold"
                 // onClick={handleAuthClick}
               >
                 Authorize
@@ -222,4 +177,4 @@ const Slides = () => {
   );
 };
 
-export default Slides;
+export default Authorize;

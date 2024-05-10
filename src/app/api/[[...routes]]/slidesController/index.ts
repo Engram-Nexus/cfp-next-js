@@ -169,7 +169,7 @@ slidesControllerApi.post("/", async (c) => {
       });
     }
     const token = await encrypt({ assistantId, slideUrl });
-    const url = BASE_URL+ "/slides-controller?token=" + token;
+    const url = BASE_URL+ "/slides?token=" + token;
     return c.json({ url }, { status: 200 });
   } catch (error) {
     console.log(error);

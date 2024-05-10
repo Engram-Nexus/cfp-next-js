@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./markdown.css";
 import { inter } from "@/lib/fonts";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Engram Nexus",
@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         {children}
-        <Toaster />
+        <Toaster position="top-center" />
       </body>
     </html>
   );
