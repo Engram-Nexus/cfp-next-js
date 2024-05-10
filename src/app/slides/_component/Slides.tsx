@@ -70,7 +70,7 @@ function Slides({ data }: { data: any }) {
         )}
       >
         <div className="overflow-y-auto h-full">
-          <div className="flex flex-col justify-between gap-6 ">
+          <div className="flex flex-col justify-between gap-6 h-full">
             <ChatMessages
               from="slides"
               welcomeMessage={"Hi , how can i help you ?"}

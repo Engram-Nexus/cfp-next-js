@@ -46,13 +46,14 @@ export default function ChatMessages(
     <div
       className={cn("w-full rounded-xl bg-white p-4 shadow-xl pb-0", {
         "flex-1": props.flex1,
+        "h-full": props.from === "slides",
       })}
     >
       <div
         className={cn(
           "flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4",
           {
-            "h-[75vh]": props.from === "slides",
+            "overflow-y-auto flex-grow": props.from === "slides",
           }
         )}
         ref={scrollableChatContainerRef}
