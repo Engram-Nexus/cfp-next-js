@@ -13,6 +13,7 @@ import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "./ui/use-toast";
+import { Input } from "./ui/input";
 
 const Slides = () => {
   const [isloading, setIsloading] = useState(false);
@@ -66,7 +67,7 @@ const Slides = () => {
             description: resp.error || "Authorization failed. Try again",
             variant: "destructive",
             className: "bg-red-500",
-          })
+          });
           setIsloading(false);
           throw resp;
         }
@@ -74,17 +75,17 @@ const Slides = () => {
       },
       error_callback: (error) => {
         console.log(error);
-        if(error.type === "popup_closed" || error==="access_denied"){
+        if (error) {
           console.log("popup closed");
           toast({
             title: "Error",
             description: error.message || "Authorization failed. Try again",
             variant: "destructive",
             className: "bg-red-500",
-          })
+          });
         }
         setIsloading(false);
-      }
+      },
     });
 
     if (gapi.client.getToken() === null) {
@@ -173,88 +174,50 @@ const Slides = () => {
           gisLoaded();
         }}
       />
-
-      <Dialog open={open}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Enter your google slide url :</DialogTitle>
-            {/* {!slidesPageUrl ? (
-              <DialogTitle>Enter your google slide url :</DialogTitle>
+      <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-900">
+        <div className="mx-auto w-full max-w-md space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-gray-50">
+              Google Slides Q&A
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400">
+              Enter a Google Slides URL to start a chat-based Q&A session.
+            </p>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <textarea
+              name="slideUrl"
+              {...register("slideUrl", {
+                required: true,
+                pattern:
+                  /https:\/\/docs.google.com\/presentation\/d\/(?:e\/)?([^/]+)/,
+              })}
+              className="w-full p-2 rounded-md focus:outline-gray-200"
+              placeholder="Enter Google Slides URL"
+              type="url"
+            />
+            {errors?.slideUrl && (
+              <p className="text-red-500">
+                Please enter a valid google slide url
+              </p>
+            )}
+            {isloading ? (
+              <Button disabled className="w-full">
+                Authorizing
+                <LoaderCircle className="animate-spin" />
+              </Button>
             ) : (
-              <DialogTitle className="text-base">
-                Click on this link to ask question to our chat bot about your
-                slide :
-              </DialogTitle>
-            )} */}
-            <DialogDescription className="my-4">
-              {/* {!slidesPageUrl ? ( */}
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="mx-4  md:mx-auto bg-[#F5F5F5] p-6 rounded-xl shadow-md"
+              <Button
+                type="submit"
+                className="w-full"
+                // onClick={handleAuthClick}
               >
-                <textarea
-                  {...register("slideUrl", {
-                    required: true,
-                    pattern:
-                      /https:\/\/docs.google.com\/presentation\/d\/(?:e\/)?([^/]+)/,
-                  })}
-                  placeholder="Slide url.."
-                  className="border-2 border-gray-300 mt-2  rounded-md px-2 w-full"
-                  type="text"
-                  name="slideUrl"
-                  // value={slideUrl}
-                  // onChange={(e) => setSlideUrl(e.target.value)}
-                  aria-invalid={errors.slideUrl ? "true" : "false"}
-                />
-                {errors?.slideUrl && (
-                  <p className="text-red-500">
-                    Please enter a valid google slide url
-                  </p>
-                )}
-                <div className="grid justify-center mt-2">
-                  {isloading ? (
-                    <Button
-                      disabled
-                      className="flex items-center justify-center gap-4"
-                    >
-                      Authorizing
-                      <LoaderCircle className="animate-spin" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      className="bg-[#0052CC] cursor-pointer p-2 grid mt-4 text-white rounded-md"
-                      // onClick={handleAuthClick}
-                    >
-                      Authorize
-                    </Button>
-                  )}
-                </div>
-              </form>
-              {/* ) : (
-                <>
-                  <a className="break-all text-blue-500" href={slidesPageUrl}>
-                    {slidesPageUrl}
-                  </a>
-
-                  <Button
-                    onClick={() => copyToClipboard(slidesPageUrl || "")}
-                    size="icon"
-                    variant="outline"
-                    className="h-8 w-8 flex-shrink-0"
-                  >
-                    {isCopied ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </>
-              )} */}
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
+                Authorize
+              </Button>
+            )}
+          </form>
+        </div>
+      </main>
     </>
   );
 };

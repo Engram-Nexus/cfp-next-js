@@ -64,12 +64,12 @@ export default function ChatInput(
       {imageUrl && (
         <UploadImagePreview url={imageUrl} onRemove={onRemovePreviewImage} />
       )}
-      <div className="flex w-full items-start justify-between gap-4 flex-col sm:flex-row z-10 relative">
+      <div className="flex w-full items-start justify-between gap-4 flex-col sm:flex-row z-10 relative flex-wrap">
         <Input
           autoFocus
           name="message"
           placeholder="Type a message"
-          className="flex-1"
+          className="flex-1 basis-40"
           value={props.input}
           onChange={props.handleInputChange}
         />
