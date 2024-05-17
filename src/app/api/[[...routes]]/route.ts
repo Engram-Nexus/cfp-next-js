@@ -6,7 +6,7 @@ import chats from "./chats";
 import clientProfileApi from "./clientProfile";
 import leadsApi from "./leads";
 import visitorApi from "./visitor";
-import slidesControllerApi from "./slidesController";
+import slidesControllerApi from "./slides";
 import fileUploadApi from "./fileUpload";
 
 export const runtime = "edge";

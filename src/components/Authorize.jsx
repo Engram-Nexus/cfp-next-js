@@ -9,8 +9,9 @@ import toast from "react-hot-toast";
 
 const Authorize = () => {
   const [isloading, setIsloading] = useState(false);
-  
+
   const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -23,7 +24,6 @@ const Authorize = () => {
   const DISCOVERY_DOC =
     "https://slides.googleapis.com/$discovery/rest?version=v1";
   const SCOPES = "https://www.googleapis.com/auth/presentations.readonly";
-
 
   function gapiLoaded() {
     gapi.load("client", initializeGapiClient);
@@ -54,7 +54,7 @@ const Authorize = () => {
       scope: SCOPES,
       callback: async (resp) => {
         if (resp.error !== undefined) {
-          toast.error(resp.error||"Authorization failed. Try again");
+          toast.error(resp.error || "Authorization failed. Try again");
           setIsloading(false);
           throw resp;
         }
@@ -64,7 +64,7 @@ const Authorize = () => {
         console.log(error);
         if (error) {
           console.log("popup closed");
-          toast.error(error.message||"Authorization failed. Try again");
+          toast.error(error.message || "Authorization failed. Try again");
         }
         setIsloading(false);
       },
@@ -83,21 +83,35 @@ const Authorize = () => {
         presentationId: id[1],
       });
 
+      const data = response?.result?.slides?.map((slide) =>
+        slide?.pageElements?.map((element) =>
+          element?.shape?.text?.textElements?.map(
+            (textElement) => textElement?.textRun
+          )
+        )
+      );
+
+      const filteredData = data?.map((item) =>
+        item?.map((slide) => slide?.filter((item) => item !== undefined))
+      );
+
       try {
         const res = await fetch("/api/slides", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ slideUrl, slidesData: response.result }),
+          body: JSON.stringify({ slideUrl, slidesData: filteredData }),
         }).then((res) => res.json());
-
         if (res.url) {
           router.push(res.url);
           setIsloading(false);
         } else {
           setIsloading(false);
-          toast.error(res?.error?.error?.message || "Something went wrong. please try again");
+          toast.error(
+            res?.error?.error?.message ||
+              "Something went wrong. please try again"
+          );
         }
       } catch (error) {
         setIsloading(false);
@@ -108,7 +122,10 @@ const Authorize = () => {
       }
     } catch (error) {
       setIsloading(false);
-      toast.error(error?.result?.error?.message || "Something went wrong. please try again");
+      toast.error(
+        error?.result?.error?.message ||
+          "Something went wrong. please try again"
+      );
       console.log(error);
     } finally {
       setIsloading(false);
@@ -159,13 +176,12 @@ const Authorize = () => {
             {isloading ? (
               <Button disabled className="w-full">
                 Authorizing
-                <LoaderCircle className="animate-spin" />
+                <LoaderCircle className="animate-spin mx-2" />
               </Button>
             ) : (
               <Button
                 type="submit"
                 className="w-full font-semibold"
-                // onClick={handleAuthClick}
               >
                 Authorize
               </Button>

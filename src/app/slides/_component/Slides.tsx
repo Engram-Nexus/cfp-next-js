@@ -6,10 +6,11 @@ import {
   SquareChevronLeft,
   SquareChevronRight,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function Slides({ data }: { data: any }) {
   const [open, setOpen] = useState(true);
+  const [slideNumber, setSlideNumber] = useState<number|undefined>(undefined);
 
   const {
     messages,
@@ -26,6 +27,31 @@ function Slides({ data }: { data: any }) {
     setOpen((prev) => !prev);
   }, [setOpen]);
 
+  const updateSlide = useCallback(() => {
+    const iframe = document.getElementById("googleSlideIframe") as HTMLIFrameElement;
+    if (iframe && slideNumber !== null) {
+      const baseIframeSrc =
+        data?.slideUrl + "/embed?start=false&loop=false&delayms=3000";
+      iframe.src = `${baseIframeSrc}&slide=${slideNumber}`;
+    }
+  }, [data?.slideUrl, slideNumber]);
+  
+  useEffect(()=>{
+    const slideContent = messages[messages.length - 1]?.content;
+    if (slideContent) {
+      const match = slideContent.match(/["']?slideNumber["']?: (\d+)/);
+      
+      if (match && match[1]) {
+        setSlideNumber(parseInt(match[1]));
+      }
+    }
+  },[messages])
+    
+
+  useEffect(() => {
+    updateSlide();
+  }, [updateSlide, slideNumber]);
+
   return (
     <div className="md:flex h-[100vh] w-full">
       <div
@@ -41,7 +67,7 @@ function Slides({ data }: { data: any }) {
             id="googleSlideIframe"
             className="w-full h-full"
             // src="https://docs.google.com/presentation/d/e/2PACX-1vSOwXWZZMSVJ3Lk03_mz7pFlpMDuf1FRBxPAbUsvS_hVvzmlk-uz2vI78avvBairfM2vdBLbrEnr5yX/embed?start=false&loop=false&delayms=3000"
-            src={data?.slideUrl + "/embed?start=false&loop=false&delayms=3000"}
+            src={data?.slideUrl.toString().split("edit")[0] + "/embed?start=false&loop=false&delayms=3000"}
             allowFullScreen={true}
           ></iframe>
         )}
@@ -75,7 +101,6 @@ function Slides({ data }: { data: any }) {
               from="slides"
               welcomeMessage={"Hi , how can i help you ?"}
               messages={messages}
-              // chatHistory={chatHistory}
               isLoading={status === "in_progress"}
               reload={() => {
                 console.log("reload");
@@ -83,7 +108,6 @@ function Slides({ data }: { data: any }) {
               stop={() => {
                 console.log("stop");
               }}
-              // flex1={flex1}
             />
             <ChatInput
               input={input}
@@ -91,8 +115,8 @@ function Slides({ data }: { data: any }) {
               handleInputChange={handleInputChange}
               isLoading={status === "in_progress"}
               threadId={threadId ? threadId : ""}
-              // assistantId={"asst_ud8uuERilaRiXv5W9XD3LHLJ"}
               assistantId={data?.assistantId}
+              sendSlideNumber={true}
             />
           </div>
         </div>

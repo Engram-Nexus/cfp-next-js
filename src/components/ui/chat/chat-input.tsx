@@ -14,7 +14,7 @@ export default function ChatInput(
     | "onFileError"
     | "handleSubmit"
     | "handleInputChange"
-  > & { assistantId: string, threadId: string| null }
+  > & { assistantId: string, threadId: string| null, sendSlideNumber?: boolean }
 ) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -30,6 +30,7 @@ export default function ChatInput(
       data: {
         assistantId: props.assistantId,
         threadId: props.threadId,
+        sendSlideNumber:props.sendSlideNumber || false
       },
     });
   };
