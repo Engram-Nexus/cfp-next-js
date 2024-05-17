@@ -67,7 +67,7 @@ function Slides({ data }: { data: any }) {
             id="googleSlideIframe"
             className="w-full h-full"
             // src="https://docs.google.com/presentation/d/e/2PACX-1vSOwXWZZMSVJ3Lk03_mz7pFlpMDuf1FRBxPAbUsvS_hVvzmlk-uz2vI78avvBairfM2vdBLbrEnr5yX/embed?start=false&loop=false&delayms=3000"
-            src={data?.slideUrl.toString().split("edit")[0] + "/embed?start=false&loop=false&delayms=3000"}
+            src={data?.slideUrl.toString().split("/edit")[0] + "/embed?start=false&loop=false&delayms=3000"}
             allowFullScreen={true}
           ></iframe>
         )}
