@@ -21,8 +21,8 @@ assistantApi.post("/", async (c) => {
     return c.json({ error: "No assistantId provided" }, 400);
   }
   return runAssistant({
-    ...input,
-    message: input?.data?.sendSlideNumber ?  input.message + "Given a presentation slide and a question, provide the relevant information along with the slide number in JSON format: {slideNumber: number}. Additionally, provide the same information in a normal format.": input.message,
+    // ...input,Please provide response always with the slideNumber.send slideNumber always in JSON format like this {slideNumber: 1} it is mandatory. 
+    message: input?.data?.sendSlideNumber ?  input.message + "Please provide the relevant information always with the slideNumber. Provide slideNumber always in JSON format like this {slideNumber: 1}.": input.message,
     assistantId: input?.data?.assistantId,
     threadId: input?.data?.threadId ? input?.data?.threadId : null,
   });
