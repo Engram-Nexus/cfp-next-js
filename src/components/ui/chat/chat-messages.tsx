@@ -51,9 +51,9 @@ export default function ChatMessages(
     >
       <div
         className={cn(
-          "flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4",
+          "flex h-[50vh] flex-col gap-5 divide-y overflow-y-auto pb-4 ",
           {
-            "overflow-y-auto flex-grow": props.from === "slides",
+            "overflow-y-auto flex-grow h-[75vh] no-scrollbar": props.from === "slides",
           }
         )}
         ref={scrollableChatContainerRef}

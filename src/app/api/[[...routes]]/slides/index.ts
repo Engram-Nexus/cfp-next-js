@@ -20,6 +20,11 @@ slidesControllerApi.post("/", async (c) => {
       return c.json({ error: "Slides are required" }, { status: 400 });
     }
 
+// add slide Number in each slides of slidesData
+slidesData = slidesData.map((slide: any, index) => {
+  return { ...slide, slideNumber: index + 1 };
+})
+
     const file = new File([JSON.stringify(slidesData)], "file.json", {
       type: "application/json",
     });
@@ -35,13 +40,14 @@ slidesControllerApi.post("/", async (c) => {
       }
     );
 
+    
     if (!assistantId) {
       assistantId = (
         await openai.beta.assistants.create({
           model: "gpt-3.5-turbo",
           name: "google slides assistant",
           instructions:
-            "read the data from slides document , and also send the slide number as a source of information , if no information is found then respond with 'no information found , please ask the question regarding to this presentation'",
+            "Read the data from the slides document, and provide the information along with the corresponding slide number always in the following JSON format: {slideNumber: 1} ",
           tool_resources: {
             file_search: {
               vector_store_ids: [vectorStore.id],
