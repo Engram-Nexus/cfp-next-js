@@ -31,7 +31,7 @@ function Slides({ data }: { data: any }) {
     const iframe = document.getElementById("googleSlideIframe") as HTMLIFrameElement;
     if (iframe && slideNumber !== null) {
       const baseIframeSrc =
-        data?.slideUrl + "/embed?start=false&loop=false&delayms=3000";
+      data?.slideUrl.toString().split("/edit")[0]  + "/embed?start=false&loop=false&delayms=3000";
       iframe.src = `${baseIframeSrc}&slide=${slideNumber}`;
     }
   }, [data?.slideUrl, slideNumber]);
