@@ -22,7 +22,7 @@ assistantApi.post("/", async (c) => {
   }
   return runAssistant({
     ...input,
-    message: input?.data?.sendSlideNumber ?  input.message + "Please provide information of this  with the slideNumber. send slideNumber always in JSON format like this {slideNumber: 1} it is mandatory.": input.message,
+    message: input?.data?.sendSlideNumber ?  input.message + "Please provide the information of this question in simple text format along with the slideNumber. send slideNumber always in JSON format like this {slideNumber: 1} it is mandatory.": input.message,
     assistantId: input?.data?.assistantId,
     threadId: input?.data?.threadId ? input?.data?.threadId : null,
   });

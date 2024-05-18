@@ -44,8 +44,8 @@ slidesData = slidesData.map((slide: any, index) => {
     if (!assistantId) {
       assistantId = (
         await openai.beta.assistants.create({
-          model: "gpt-3.5-turbo",
-          name: "google slides assistant",
+          model: "gpt-4o",
+          name: "google slides assistant gpt-4",
           instructions:
             "Read the data from the slides document, and provide the information along with the corresponding slide number always in the following JSON format: {slideNumber: 1} ",
           tool_resources: {
