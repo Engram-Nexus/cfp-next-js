@@ -20,11 +20,6 @@ slidesControllerApi.post("/", async (c) => {
       return c.json({ error: "Slides are required" }, { status: 400 });
     }
 
-// add slide Number in each slides of slidesData
-slidesData = slidesData.map((slide: any, index) => {
-  return { ...slide, slideNumber: index + 1 };
-})
-
     const file = new File([JSON.stringify(slidesData)], "file.json", {
       type: "application/json",
     });
