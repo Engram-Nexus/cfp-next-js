@@ -79,29 +79,52 @@ const Authorize = () => {
   const listSlides = async (slideUrl) => {
     try {
       const id = slideUrl.match(/\/d\/(?:e\/)?([^/]+)/);
+   
       const response = await gapi.client.slides.presentations.get({
         presentationId: id[1],
       });
+       
+      // const data = response?.result?.slides
+      //   ?.map((slide, index) => ({
+      //     content: slide?.pageElements
+      //       ?.map((element) =>
+      //         element?.shape?.text?.textElements
+      //           ?.map((textElement) => textElement?.textRun?.content)
+      //           .filter(Boolean)
+      //       )
+      //       .filter(Boolean),
+      //     slideNumber: index + 1,
+      //   }))
+      //   .filter(Boolean);
 
-      const data = response?.result?.slides?.map((slide) =>
-        slide?.pageElements?.map((element) =>
-          element?.shape?.text?.textElements?.map(
-            (textElement) => textElement?.textRun
-          )
-        )
-      );
+            const slides = response?.result?.slides || [];
+            const data = slides.reduce((acc, slide, index) => {
+              const pageElements = slide?.pageElements || [];
+              const content = pageElements
+                .reduce((acc, element) => {
+                  const textElements = element?.shape?.text?.textElements || [];
+                  return acc.concat(
+                    textElements
+                      .filter((textElement) => textElement?.textRun?.content)
+                      .map((textElement) => textElement.textRun.content)
+                  );
+                }, [])
+                .filter(Boolean);
 
-      const filteredData = data?.map((item) =>
-        item?.map((slide) => slide?.filter((item) => item !== undefined))
-      );
+              if (content.length) {
+                acc.push({ content, slideNumber: index + 1 });
+              }
 
+              return acc;
+            }, []);
+   
       try {
         const res = await fetch("/api/slides", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ slideUrl, slidesData: filteredData }),
+          body: JSON.stringify({ slideUrl, slidesData: data }),
         }).then((res) => res.json());
         if (res.url) {
           router.push(res.url);
